@@ -5,7 +5,7 @@ fragment shader draws a frosted-resin character with colour glowing inside it, a
 canvas draws the screen face. Four versions (Head, Pod, Buddy, Tall), 33 expressions,
 pointer-follow, spring antennas, tap reactions.
 
-- Zero runtime dependencies, no 3D library. Core is ~23 KB gzipped (`npm run build` prints it).
+- Zero runtime dependencies, no 3D library. Core is 23.6 kB gzipped (`npm run build` prints it).
 - Never taller than 500 CSS px; works down to 280 × 360.
 - Renders nothing until it is within 200 px of the viewport; stops when offscreen or the tab is hidden.
 - Drops to ~20 fps when nothing is changing; picks a quality tier from measured frame time.
@@ -106,12 +106,14 @@ falls back to `/kaykav-guide/posters/`.
 
 | Tier | What it draws | When |
 |---|---|---|
-| **High** | the full shader with 5-sample supersampling on silhouette, grazing and screen-seam pixels, and a 16-step interior march (vs 10) | Auto steps up from Medium after two 1.5 s windows averaging under 18.5 ms per frame at full buffer scale; steps back (for good) if it averages over 21 ms |
+| **High** | the full shader with 5-sample supersampling on silhouette, grazing and screen-seam pixels, and a 16-step interior march (vs 10) | Auto steps up from Medium after two 1.5 s windows averaging under 18.5 ms per frame at full buffer scale, measured while drawing every frame (idle-rate samples never count toward stepping up); steps back (for good) if it averages over 21 ms |
 | **Medium** | prototype quality: single sample, 10-step interior march. Scales its drawing buffer between 0.6× and 1× like the prototype | the start tier. Buffer scale drops 0.15 per window over 24 ms and recovers 0.1 per two windows under 18.5 ms |
 | **Low** | a static WebP poster of the current version, the live 2D face mapped onto its screen with a CSS perspective transform, and a CSS bob | `prefers-reduced-motion`, `navigator.connection.saveData`, no WebGL (or a software-only GPU), a lost context, a shader that fails to compile, or Medium still over 30 ms at 0.6× for two windows |
 
 Frame time is the interval from a drawn frame to the next display frame (so a slow GPU shows up
-as late frames), averaged per 1.5 s window, ignoring 0.6 s after any change.
+as late frames), averaged per 1.5 s window, ignoring 0.6 s after any change. At the idle ~20 fps
+the GPU has 50 ms per draw and rarely delays the next display frame, so idle samples can only
+ever argue for stepping down.
 
 **Pixel budget.** The drawing buffer is `min(cssHeight × devicePixelRatio, 750)` tall
 (× the Medium scale), whatever the window size. The pixel count is bounded, so High spends the
@@ -145,7 +147,7 @@ npm run fidelity   # silhouette IoU vs the references → fidelity/
 npm run faces      # expression grid + flash check → fidelity/faces.png
 npm run posters    # re-render the Low-tier posters → public/posters/
 npm run bench      # frame time per tier on this machine
-npm run check:runtime  # lazy start, offscreen/hidden stop, 20 fps idle, Low for reduced motion / Data Saver, destroy()
+npm run check:runtime  # lazy start, offscreen/hidden stop, 20 fps idle, taps, Low for reduced motion / Data Saver, destroy()
 npm run check:react    # <KayKavGuide /> under React StrictMode
 ```
 

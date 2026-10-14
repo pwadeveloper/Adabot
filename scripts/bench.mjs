@@ -1,7 +1,7 @@
 // npm run bench — average frame time per tier on this machine.
 //  1. live demo page per forced tier, pointer kept moving so the loop runs at full rate:
 //     mean interval between display frames (what a student would feel)
-//  2. raw GPU cost: draw + gl.finish() per program at the capped drawing-buffer size
+//  2. raw GPU cost: draw + a 1-pixel readPixels (a real sync) per program at the capped buffer size
 //  3. what Auto settles on here, and why
 import { pad, withHarness } from './lib.mjs';
 
@@ -43,7 +43,7 @@ async function auto() {
   }, { path: `/?soft=1&v=${VERSION}`, viewport: { width: 1200, height: 900 } });
 }
 
-const raw = await withHarness(page => page.evaluate(v => window.KK.drawCost(v, [1, 2], 8), VERSION));
+const raw = await withHarness(page => page.evaluate(v => window.KK.drawCost(v, [1, 2], 4), VERSION));
 const rows = [];
 for (const t of ['high', 'medium', 'low']) rows.push(await live(t));
 const a = await auto();
@@ -55,6 +55,6 @@ for (const r of rows) {
   const s = r.stats;
   console.log(`  ${pad(r.tier, 9)}${pad(r.mean.toFixed(1), 13)}${pad(r.fps.toFixed(1), 8)}${s.bufferWidth ? `${s.bufferWidth}×${s.bufferHeight}` : 'poster + 2D face'}`);
 }
-console.log('\nRaw draw + gl.finish() per frame, 750 px tall buffer (the cap):');
+console.log('\nRaw draw + GPU sync per frame, 750 px tall buffer (the cap):');
 for (const r of raw) console.log(`  ${pad(r.level === 2 ? 'high' : 'medium', 9)}${r.ms.toFixed(1)} ms (${r.w}×${r.h}, mean of ${r.n})`);
 console.log(`\nAuto tier after 20 s: ${a.stats.tier} (${a.stats.reason}); steps: ${a.steps.map(s => `${s.tier} [${s.reason}]`).join(' → ') || 'none'}`);

@@ -53,6 +53,16 @@ await withHarness(async page => {
   const label = await page.evaluate(() => document.getElementById('c').getAttribute('aria-label'));
   check('role="img" with the expression in the label', /neutral|sleeping|surprised/.test(label) && (await page.evaluate(() => document.getElementById('c').getAttribute('role'))) === 'img', label);
 
+  const tap = async (x, y) => {
+    await page.evaluate(() => { window.__taps = []; window.guide().on('tap', e => window.__taps.push(e.part)); });
+    const b = await page.locator('#c').boundingBox();
+    await page.mouse.click(b.x + b.width * x, b.y + b.height * y);
+    await page.waitForTimeout(300);
+    return page.evaluate(() => window.__taps.join(','));
+  };
+  const onBody = await tap(0.5, 0.5), onEmpty = await tap(0.03, 0.97);
+  check('tap on the body reports "body"; empty space reports nothing (WebGL readback)', onBody === 'body' && onEmpty === '', `centre → "${onBody}", corner → "${onEmpty}"`);
+
   const d = await page.evaluate(() => window.destroyGuide());
   const after = await drawsOver(page, 1000);
   check('destroy() frees the GL context and stops', d.lost && after === 0 && d.posters === 0, `context lost: ${d.lost}, draws/s after: ${after}`);
@@ -68,6 +78,15 @@ for (const [name, opts] of [['prefers-reduced-motion → Low, no WebGL', { reduc
     const c = await counts(page);
     const img = await page.evaluate(() => [...document.querySelectorAll('[data-kaykav-poster] img')].map(i => i.getAttribute('src')).join(','));
     check(name, s.tier === 'low' && c.contexts === 0, `tier ${s.tier} (${s.reason}), WebGL contexts ${c.contexts}, poster ${img}`);
+    if (opts) {
+      await page.evaluate(() => { window.__taps = []; window.guide().on('tap', e => window.__taps.push(e.part)); });
+      const b = await page.locator('#c').boundingBox();
+      await page.mouse.click(b.x + b.width * 0.5, b.y + b.height * 0.5);
+      await page.mouse.click(b.x + b.width * 0.03, b.y + b.height * 0.97);
+      await page.waitForTimeout(300);
+      const taps = await page.evaluate(() => window.__taps.join(','));
+      check('Low tier: tap on the body reports "body" (poster alpha), empty space nothing', taps === 'body', `taps: "${taps}"`);
+    }
   }, { path: '/harness/runtime.html', viewport: { width: 600, height: 700 }, page: opts ?? {} });
 }
 

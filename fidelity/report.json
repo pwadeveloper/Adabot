@@ -16,14 +16,14 @@
   {
     "version": "buddy",
     "ref": "buddy.jpg",
-    "iou": 0.9226,
+    "iou": 0.9416,
     "target": 0.92,
     "handoffV2": 0.892
   },
   {
     "version": "tall",
     "ref": "tall.png",
-    "iou": 0.7971,
+    "iou": 0.9007,
     "target": 0.9,
     "handoffV2": 0.76
   }

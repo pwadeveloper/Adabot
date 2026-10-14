@@ -135,6 +135,7 @@ class Guide implements GuideController {
   private raf = 0;
   private prevRaf = 0;
   private drewPrev = false;
+  private prevFull = false;
   private lastDraw = 0;
   private lastTick = 0;
   private activeUntil = 0;
@@ -310,10 +311,11 @@ class Guide implements GuideController {
 
   private frame = (now: number): void => {
     this.raf = requestAnimationFrame(this.frame);
-    if (this.drewPrev && this.prevRaf) this.auto.sample(now - this.prevRaf, now);
+    if (this.drewPrev && this.prevRaf) this.auto.sample(now - this.prevRaf, now, this.prevFull);
     this.prevRaf = now; this.drewPrev = false;
     this.readPointer();
     const active = this.isActive(now), low = this.tierNow === 'low';
+    this.prevFull = active;
     const gap = low ? (active ? 33 : 50) : active ? 0 : 50;
     if (now - this.lastDraw < gap - 4) return;
 

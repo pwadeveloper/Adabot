@@ -307,7 +307,8 @@ async function still(version: Version, w: number, h: number, level: Level): Prom
   return toURL(c);
 }
 
-/** Mean draw + finish time per level at the 750 px drawing-buffer cap (4:3 stage). */
+/** Mean draw time per level at the 750 px drawing-buffer cap (4:3 stage); a 1-pixel readPixels
+ * waits for the GPU (gl.finish() returns early in Chrome's GPU process). */
 async function drawCost(version: Version, levels: Level[], n: number): Promise<Array<{ level: Level; ms: number; w: number; h: number; n: number }>> {
   const h = 750, w = 1000, out: Array<{ level: Level; ms: number; w: number; h: number; n: number }> = [];
   const c = document.createElement('canvas'); c.width = w; c.height = h;
@@ -318,9 +319,10 @@ async function drawCost(version: Version, levels: Level[], n: number): Promise<A
   const world = Rig.restWorld(version), cam = framing(VARIANTS[version], w, h);
   for (const level of levels) {
     while (r.request(version, level) === 'pending') await new Promise(res => setTimeout(res, 20));
-    r.draw(version, level, world, cam, w, h); r.gl.finish(); // warm-up
+    const px = new Uint8Array(4), sync = (): void => { r.gl.readPixels(0, 0, 1, 1, r.gl.RGBA, r.gl.UNSIGNED_BYTE, px); };
+    r.draw(version, level, world, cam, w, h); sync(); // warm-up
     const t0 = performance.now();
-    for (let i = 0; i < n; i++) { r.draw(version, level, world, cam, w, h); r.gl.finish(); }
+    for (let i = 0; i < n; i++) { r.draw(version, level, world, cam, w, h); sync(); }
     out.push({ level, ms: (performance.now() - t0) / n, w, h, n });
   }
   r.destroy();

@@ -1,14 +1,23 @@
+/* Layout: the guide on a fixed light "photo studio" stage (it is lit like the renders in both
+   themes), controls in a side column that stacks under it on phones. */
 :root {
   --bg: #eceff6; --surface: #fff; --ink: #16204a; --muted: #5a6590; --line: #d7dcec; --accent: #2c47b0;
-  --studio-a: #f3f5f3; --studio-b: #e7ebec;
+  --btn: #f6f7fb; --on-ink: #fff;
+  --studio-a: #f3f5f3; --studio-b: #e7ebec; --studio-line: #d7dcec;
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ink); background: var(--bg);
 }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0d1330; --surface: #151c40; --ink: #e6eafb; --muted: #9aa4cc; --line: #2a3466; --accent: #93a9ff;
+  --btn: #1c2550; --on-ink: #0d1330; --studio-line: #2a3466; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0d1330; --surface: #151c40; --ink: #e6eafb; --muted: #9aa4cc; --line: #2a3466; --accent: #93a9ff;
+  --btn: #1c2550; --on-ink: #0d1330; --studio-line: #2a3466; color-scheme: dark }
 * { box-sizing: border-box; }
-body { margin: 0; font-size: 15px; -webkit-font-smoothing: antialiased; }
+body { margin: 0; font-size: 15px; -webkit-font-smoothing: antialiased; background: var(--bg); color: var(--ink); }
 button, input { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-.wrap { max-width: 1180px; margin: 0 auto; padding: 20px 16px 40px; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-block: 20px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 .top { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
 .eyebrow { margin: 0 0 4px; font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
 h1 { margin: 0; font-size: 26px; letter-spacing: -.01em; }
@@ -16,9 +25,9 @@ h1 { margin: 0; font-size: 26px; letter-spacing: -.01em; }
 .layout { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
 @media (max-width: 860px) { .layout { grid-template-columns: minmax(0, 1fr); } }
 
-.stage { position: relative; height: 500px; border-radius: 22px; overflow: hidden; border: 1px solid var(--line);
+.stage { position: relative; height: 500px; border-radius: 22px; overflow: hidden; border: 1px solid var(--studio-line);
   background: radial-gradient(90% 75% at 50% 42%, var(--studio-a) 0%, var(--studio-b) 100%); }
-.stage.compact { width: 280px; height: 360px; margin: 0 auto; }
+.stage.compact { width: 280px; max-width: 100%; height: 360px; margin: 0 auto; }
 .stage canvas { display: block; width: 100%; height: 100%; }
 
 .readout { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 10px 0 0; font-variant-numeric: tabular-nums; }
@@ -35,12 +44,12 @@ legend { padding: 0 6px; font-size: 12px; font-weight: 600; letter-spacing: .1em
 
 .seg { display: inline-flex; gap: 2px; padding: 4px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); }
 .seg button { border: 0; background: transparent; padding: 7px 14px; border-radius: 999px; cursor: pointer; color: var(--muted); font-weight: 500; }
-.seg button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--on-ink); }
 .seg.small button { padding: 6px 12px; font-size: 13px; }
 
-.btn { border: 1px solid var(--line); background: #f6f7fb; border-radius: 10px; padding: 7px 12px; cursor: pointer; }
+.btn { border: 1px solid var(--line); background: var(--btn); border-radius: 10px; padding: 7px 12px; cursor: pointer; }
 .btn:hover { border-color: var(--accent); }
-.btn[aria-pressed="true"] { background: var(--ink); color: #fff; border-color: var(--ink); }
+.btn[aria-pressed="true"] { background: var(--ink); color: var(--on-ink); border-color: var(--ink); }
 .slider { display: flex; align-items: center; gap: 8px; margin: 12px 0 10px; font-size: 14px; }
 .slider input { flex: 1; }
 .check { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; }

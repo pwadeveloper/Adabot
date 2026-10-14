@@ -17,5 +17,5 @@
     "skipLibCheck": true,
     "types": []
   },
-  "include": ["src", "demo", "harness", "vite.config.ts"]
+  "include": ["src", "demo", "harness", "vite.config.ts", "vite.demo.config.ts"]
 }

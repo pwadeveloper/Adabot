@@ -31,7 +31,8 @@
     "posters": "node scripts/posters.mjs",
     "bench": "node scripts/bench.mjs",
     "check:react": "node scripts/react-check.mjs",
-    "check:runtime": "node scripts/runtime-check.mjs"
+    "check:runtime": "node scripts/runtime-check.mjs",
+    "demo:artifact": "node scripts/demo-artifact.mjs"
   },
   "peerDependencies": {
     "react": ">=18"

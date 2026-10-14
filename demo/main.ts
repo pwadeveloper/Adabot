@@ -9,7 +9,10 @@ const canvas = $<HTMLCanvasElement>('guide');
 const guide = createGuide(canvas, {
   version: (params.get('v') as Version | null) ?? 'buddy',
   tier: (params.get('tier') as TierSetting | null) ?? 'auto',
-  posterBase: '/posters/',
+  // the published single-file demo inlines the posters; the dev server serves public/posters/
+  ...((window as unknown as { __KK_POSTERS?: Partial<Record<Version, string>> }).__KK_POSTERS
+    ? { posters: (window as unknown as { __KK_POSTERS: Partial<Record<Version, string>> }).__KK_POSTERS }
+    : { posterBase: '/posters/' }),
   // ?soft=1 lets software WebGL (headless CI) run the live tiers
   allowSoftwareGL: params.has('soft')
 });

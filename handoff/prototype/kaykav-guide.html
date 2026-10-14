@@ -1,0 +1,1073 @@
+<title>KayKav Course Guide</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: photo-studio stage for the 3D guide (left, always lit like the renders) + course chat (right); stacks on phones */
+:root{
+  --bg:#ECEFF6; --surface:#FFFFFF; --ink:#16204A; --muted:#5A6590; --line:#D7DCEC;
+  --accent:#2C47B0; --accent-ink:#FFFFFF; --mint:#1C9C7B; --glow:#D9A800;
+  --bubble-bot:#F0F3FA; --shadow:rgba(30,45,110,.10);
+  --studio-a:#F3F5F3; --studio-b:#E7EBEC; --stage-ink:#1A2250; --stage-muted:#5E6890;
+  --stage-glass:rgba(255,255,255,.78); --stage-line:rgba(26,34,80,.10); --screen:#17244F; --screen-2:#24366C;
+  --font-display:"Cormorant Garamond","Cormorant",Georgia,serif;
+  --font-body:"Figtree","Delight",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0A0F27; --surface:#121939; --ink:#E6EAFB; --muted:#98A2CC; --line:#252F5E;
+  --accent:#93A9FF; --accent-ink:#0A0F27; --mint:#5FE0BE; --glow:#FFE36A;
+  --bubble-bot:#1B2350; --shadow:rgba(0,0,0,.35); color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0A0F27; --surface:#121939; --ink:#E6EAFB; --muted:#98A2CC; --line:#252F5E;
+  --accent:#93A9FF; --accent-ink:#0A0F27; --mint:#5FE0BE; --glow:#FFE36A;
+  --bubble-bot:#1B2350; --shadow:rgba(0,0,0,.35); color-scheme:dark }
+
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.app{height:100%;max-width:1480px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:16px;
+  padding-block:16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* Stage: a fixed light studio so the resin reads as in the renders, in both themes */
+.stage{position:relative;min-height:0;border-radius:22px;overflow:hidden;color:var(--stage-ink);
+  background:radial-gradient(90% 75% at 50% 42%,var(--studio-a) 0%,var(--studio-b) 100%);border:1px solid var(--stage-line)}
+#gl{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:manipulation}
+.stage-top{position:absolute;top:0;left:0;right:0;padding:20px 22px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;pointer-events:none}
+.eyebrow{margin:0 0 6px;font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--stage-muted)}
+h1{margin:0;font-family:var(--font-display);font-weight:600;font-size:clamp(26px,3vw,38px);line-height:1.02;letter-spacing:-.01em;text-wrap:balance}
+h1 em{font-style:italic;font-weight:500;color:#2C47B0}
+.seg{pointer-events:auto;display:flex;gap:2px;padding:4px;border-radius:999px;background:var(--stage-glass);border:1px solid var(--stage-line);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.seg button{border:0;background:transparent;padding:7px 13px;border-radius:999px;font-size:13px;font-weight:500;cursor:pointer;color:var(--stage-muted)}
+.seg button:hover{color:var(--stage-ink)}
+.seg button[aria-pressed="true"]{background:var(--stage-ink);color:#fff}
+.stage-bottom{position:absolute;left:0;right:0;bottom:0;padding:14px 16px;display:flex;justify-content:space-between;align-items:flex-end;gap:10px;pointer-events:none}
+.face-btn{pointer-events:auto;display:flex;align-items:center;gap:10px;border:1px solid var(--stage-line);background:var(--stage-glass);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:999px;padding:5px 14px 5px 5px;cursor:pointer;color:var(--stage-ink);
+  box-shadow:0 6px 20px rgba(30,45,110,.08)}
+.face-btn canvas{width:52px;height:32px;border-radius:999px;display:block}
+.face-btn span{font-size:13px;font-weight:600}
+.face-btn small{font-weight:500;color:var(--stage-muted);font-size:12px;margin-left:2px}
+.hint{font-size:12px;color:var(--stage-muted);text-align:right;line-height:1.4;max-width:230px;margin:0}
+
+.sheet{position:absolute;left:10px;right:10px;bottom:10px;max-height:min(66%,520px);display:flex;flex-direction:column;border-radius:18px;
+  background:rgba(250,251,253,.95);border:1px solid var(--stage-line);box-shadow:0 18px 50px rgba(30,45,110,.18);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);overflow:hidden}
+.sheet[hidden]{display:none}
+.sheet-head{display:flex;justify-content:space-between;align-items:center;padding:12px 14px 8px 18px}
+.sheet-head strong{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--stage-muted);font-weight:600}
+.sheet-head button{border:0;background:transparent;cursor:pointer;color:var(--stage-ink);font-size:13px;font-weight:600;padding:6px 10px;border-radius:8px}
+.sheet-head button:hover{background:rgba(26,34,80,.06)}
+.grid{overflow-y:auto;padding:4px 14px 16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:12px 10px}
+.tile{border:0;background:transparent;padding:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--stage-ink)}
+.tile canvas{width:100%;aspect-ratio:1.6;max-width:100%;display:block;border-radius:16px;transition:transform .15s}
+.tile:hover canvas{transform:translateY(-2px)}
+.tile[aria-pressed="true"] canvas{outline:2.5px solid #2C47B0;outline-offset:2px}
+.tile span{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+
+.fallback{position:absolute;inset:0;display:grid;place-items:center;padding:24px;text-align:center;color:var(--stage-muted)}
+
+/* Chat */
+.chat{min-height:0;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:22px;overflow:hidden}
+.chat-head{display:flex;align-items:center;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line)}
+.avatar{width:40px;height:40px;flex:none;border-radius:13px;background:linear-gradient(160deg,var(--screen-2),var(--screen));display:grid;place-items:center;box-shadow:0 0 0 3px #CCD5F2}
+.avatar canvas{width:34px;height:21px;display:block}
+.who{min-width:0;display:flex;flex-direction:column;line-height:1.25}
+.who strong{font-weight:600;font-size:15px}
+.status{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--mint)}
+.dot[data-s="think"]{background:var(--glow);animation:pulse 1s ease-in-out infinite}
+.dot[data-s="talk"]{background:var(--accent);animation:pulse .5s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.35}}
+.log{flex:1;min-height:0;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:10px}
+.msg{max-width:86%;padding:10px 14px;border-radius:16px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.msg.me{align-self:flex-end;background:var(--accent);color:var(--accent-ink);border-bottom-right-radius:5px}
+.msg.bot{align-self:flex-start;background:var(--bubble-bot);border-bottom-left-radius:5px}
+.msg.pending{color:var(--muted);font-style:italic}
+.note{align-self:center;font-size:12px;color:var(--muted);text-align:center;max-width:90%;line-height:1.45}
+.chips{display:flex;flex-wrap:wrap;gap:6px;padding:0 18px 12px}
+.chip{border:1px solid var(--line);background:transparent;border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer;color:var(--ink)}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+.chip:disabled{opacity:.45;cursor:default}
+form{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--line)}
+#q{flex:1;min-width:0;border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:11px 14px;outline:none}
+#q:focus{border-color:var(--accent)}
+.btn{border:0;border-radius:12px;padding:0 18px;font-weight:600;cursor:pointer;background:var(--accent);color:var(--accent-ink)}
+.btn.stop{background:var(--ink);color:var(--surface)}
+.foot{margin:0;padding:0 18px 12px;font-size:11.5px;color:var(--muted);min-height:1em}
+
+@media (max-width:900px){
+  html,body{height:auto}
+  .app{height:auto;grid-template-columns:minmax(0,1fr)}
+  .stage{height:560px}
+  .chat{height:560px}
+  .hint{display:none}
+}
+@media (max-width:520px){ .stage-top{padding:16px} .seg button{padding:6px 10px;font-size:12.5px} .stage{height:600px} }
+@media (prefers-reduced-motion:reduce){ .dot{animation:none!important} .tile canvas{transition:none} }
+</style>
+
+<div class="app">
+  <section class="stage" id="stage">
+    <canvas id="gl" role="img" aria-label="Interactive 3D model of the KayKav course guide mascot"></canvas>
+    <div class="stage-top">
+      <div>
+        <p class="eyebrow">learn.kaykav.academy · prototype</p>
+        <h1>Your course guide, <em>in 3D</em></h1>
+      </div>
+      <div class="seg" role="group" aria-label="Character version" id="seg"></div>
+    </div>
+    <div class="stage-bottom">
+      <button class="face-btn" id="faceBtn" type="button" aria-expanded="false" aria-controls="sheet">
+        <canvas id="faceMini" width="104" height="64"></canvas>
+        <span id="faceName">Neutral</span><small>Faces</small>
+      </button>
+      <p class="hint">Move your cursor. Tap the guide, or flick an antenna.</p>
+    </div>
+    <div class="sheet" id="sheet" hidden>
+      <div class="sheet-head"><strong>Expressions</strong><button type="button" id="sheetClose">Close</button></div>
+      <div class="grid" id="grid"></div>
+    </div>
+  </section>
+
+  <aside class="chat" aria-label="Chat with the course guide">
+    <header class="chat-head">
+      <div class="avatar" aria-hidden="true"><canvas id="avatar" width="102" height="64"></canvas></div>
+      <div class="who">
+        <strong>Course guide</strong>
+        <span class="status"><span class="dot" id="dot"></span><span id="status">Ready</span></span>
+      </div>
+    </header>
+    <div class="log" id="log" aria-live="polite">
+      <div class="msg bot">Hi! I'm your guide for Built, Not Prompted. Ask me about a lesson, your MVP, or an error you're stuck on.</div>
+    </div>
+    <div class="chips" id="chips">
+      <button class="chip" type="button">What will I build in this course?</button>
+      <button class="chip" type="button">Explain an API with an analogy</button>
+      <button class="chip" type="button">How do I deploy my MVP?</button>
+      <button class="chip" type="button">I'm stuck on an error</button>
+    </div>
+    <form id="form" autocomplete="off">
+      <input id="q" name="q" placeholder="Ask the guide anything…" aria-label="Your question" maxlength="800">
+      <button class="btn" id="send" type="submit">Send</button>
+    </form>
+    <p class="foot" id="foot"></p>
+  </aside>
+</div>
+
+<script>
+(() => {
+'use strict';
+const $ = id => document.getElementById(id);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, k) => a + (b - a) * k;
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const stage = $('stage'), canvas = $('gl');
+
+/* =====================================================================
+   1. FACE ARTWORK — every expression from the sheet, drawn as glowing
+      strokes on a 1024×640 canvas that maps onto the screen glass.
+   ===================================================================== */
+const FW = 1024, FH = 640, CY = 320, EL = 256, ER = 768;
+const YEL = '#FFE45C', BLUE = '#62C8FF';
+const FACES = [
+  ['neutral', 'Neutral'], ['happy', 'Happy'], ['sad', 'Sad'], ['surprised', 'Surprised'],
+  ['confused', 'Confused'], ['excited', 'Excited'], ['tired', 'Tired'], ['wink', 'Wink'],
+  ['crying', 'Crying'], ['laughing', 'Laughing'], ['giggling', 'Laughing hard'], ['shy', 'Shy'],
+  ['love', 'Love'], ['thinking', 'Thinking'], ['sleeping', 'Sleeping'], ['dizzy', 'Dizzy'], ['bored', 'Bored'],
+  ['proud', 'Proud'], ['skeptical', 'Skeptical'], ['scared', 'Scared'], ['determined', 'Determined'],
+  ['playful', 'Playful'], ['curious', 'Curious'], ['shocked', 'Shocked'], ['relaxed', 'Relaxed'], ['gloating', 'Gloating'],
+  ['nervous', 'Nervous'], ['jittery', 'Jittery'], ['cheeky', 'Cheeky'], ['peaceful', 'Peaceful'], ['glitch', 'Glitch'],
+  ['listening', 'Listening'], ['talking', 'Talking']
+];
+const FACE_NAME = Object.fromEntries(FACES);
+const BLINKS = new Set(['neutral', 'listening', 'talking', 'surprised', 'wink', 'thinking', 'skeptical', 'curious', 'playful', 'cheeky', 'shy', 'laughing', 'crying']);
+
+function faceItems(key, o) {
+  const it = [];
+  const st = (p, a = 1, w = 28, col = YEL) => it.push({ k: 's', p, a, w, col });
+  const fl = (p, a = 1, col = YEL) => it.push({ k: 'f', p, a, col });
+  const P = () => new Path2D();
+  const Y = v => CY + v;
+  const open = BLINKS.has(key) ? o.open : 1;
+  const t = o.t;
+  const ring = (x, y, r = 58, op = open) => { const p = P(); if (op < 0.18) { p.moveTo(x - r, Y(y)); p.lineTo(x + r, Y(y)); } else { p.moveTo(x + r, Y(y)); p.ellipse(x, Y(y), r, r * op, 0, 0, Math.PI * 2); } st(p); };
+  const dash = (x, y, len = 64, a = 1) => { const p = P(); p.moveTo(x - len / 2, Y(y)); p.lineTo(x + len / 2, Y(y)); st(p, a); };
+  const d3 = (opt = {}) => [404, 512, 620].forEach((x, k) => dash(x, (opt.y || 0) + (opt.dy ? opt.dy(k) : 0), opt.len ? opt.len(k) : 64, opt.a ? opt.a(k) : 1));
+  const dot = (x, y, r, a = 1) => { const p = P(); p.arc(x, Y(y), r, 0, Math.PI * 2); fl(p, a); };
+  const line = (x1, y1, x2, y2, a = 1, w = 28) => { const p = P(); p.moveTo(x1, Y(y1)); p.lineTo(x2, Y(y2)); st(p, a, w); };
+  const caret = (x, y) => { const p = P(); p.moveTo(x - 56, Y(y + 24)); p.quadraticCurveTo(x, Y(y - 70), x + 56, Y(y + 24)); st(p); };
+  const cup = (x, y) => { const p = P(); p.moveTo(x - 50, Y(y - 22)); p.quadraticCurveTo(x, Y(y + 66), x + 50, Y(y - 22)); st(p); };
+  const chev = (x, y, d) => { const p = P(); p.moveTo(x - 34 * d, Y(y - 46)); p.lineTo(x + 38 * d, Y(y)); p.lineTo(x - 34 * d, Y(y + 46)); st(p); };
+  const heart = (x, y, s = 1) => { const p = P(); p.moveTo(x, Y(y + 50 * s)); p.bezierCurveTo(x - 74 * s, Y(y + 2 * s), x - 56 * s, Y(y - 62 * s), x, Y(y - 24 * s)); p.bezierCurveTo(x + 56 * s, Y(y - 62 * s), x + 74 * s, Y(y + 2 * s), x, Y(y + 50 * s)); p.closePath(); st(p, 1, 24); };
+  const aster = (x, y, r = 48) => { const p = P(); for (const a of [Math.PI / 2, Math.PI / 6, -Math.PI / 6]) { p.moveTo(x - Math.cos(a) * r, Y(y - Math.sin(a) * r)); p.lineTo(x + Math.cos(a) * r, Y(y + Math.sin(a) * r)); } st(p, 1, 24); };
+  const zig = (x, y, d) => { const pts = [[-30, -50], [34, -30], [-20, 0], [34, 30], [-30, 50]]; const p = P(); pts.forEach(([px, py], i) => i ? p.lineTo(x + px * d, Y(y + py)) : p.moveTo(x + px * d, Y(y + py))); st(p, 1, 24); };
+  const bolt = (x, y) => { const p = P(); p.moveTo(x + 14, Y(y - 62)); p.lineTo(x - 26, Y(y + 6)); p.lineTo(x + 4, Y(y + 6)); p.lineTo(x - 12, Y(y + 64)); p.lineTo(x + 28, Y(y - 8)); p.lineTo(x - 2, Y(y - 8)); p.closePath(); st(p, 1, 20); };
+  const quote = (x, y, flip) => {
+    const T = (px, py) => flip ? [x - px, Y(y - py)] : [x + px, Y(y + py)];
+    const c = T(0, 16), p = P(); p.arc(c[0], c[1], 31, 0, Math.PI * 2); fl(p);
+    const q = P(), a = T(-26, 4), b = T(-30, -44), e = T(12, -60); q.moveTo(a[0], a[1]); q.quadraticCurveTo(b[0], b[1], e[0], e[1]); st(q, 1, 22);
+  };
+  const excl = (x, y) => { line(x, y - 58, x, y + 4, 1, 24); dot(x, y + 44, 14); };
+  const spiral = (x, y, rot) => { const p = P(), tm = Math.PI * 2 * 1.75; for (let a = 0; a <= tm; a += 0.1) { const r = 8 + 54 * (a / tm), px = x + Math.cos(a + rot) * r, py = Y(y) + Math.sin(a + rot) * r; a ? p.lineTo(px, py) : p.moveTo(px, py); } st(p, 1, 17); };
+  const zed = (x, y, s, a) => { const p = P(); p.moveTo(x - s / 2, Y(y - s / 2)); p.lineTo(x + s / 2, Y(y - s / 2)); p.lineTo(x - s / 2, Y(y + s / 2)); p.lineTo(x + s / 2, Y(y + s / 2)); st(p, a, Math.max(12, s * 0.2)); };
+  const question = (x, y) => { const p = P(); p.moveTo(x - 36, Y(y - 36)); p.bezierCurveTo(x - 36, Y(y - 92), x + 44, Y(y - 92), x + 42, Y(y - 40)); p.bezierCurveTo(x + 40, Y(y - 12), x, Y(y - 10), x, Y(y + 20)); st(p, 1, 24); dot(x, y + 60, 14); };
+  const tear = (x, y, a) => { const p = P(); p.moveTo(x, Y(y - 30)); p.bezierCurveTo(x + 6, Y(y - 16), x + 19, Y(y - 2), x + 19, Y(y + 8)); p.arc(x, Y(y + 8), 19, 0, Math.PI); p.bezierCurveTo(x - 19, Y(y - 2), x - 6, Y(y - 16), x, Y(y - 30)); fl(p, a, BLUE); };
+  const wave = (x0, x1, y, amp, cyc, ph, tri) => { const p = P(); for (let i = 0; i <= 80; i++) { const u = i / 80, x = lerp(x0, x1, u), th = u * cyc * Math.PI * 2 + ph; const s = tri ? (2 / Math.PI) * Math.asin(Math.sin(th)) : Math.sin(th); i ? p.lineTo(x, Y(y + s * amp)) : p.moveTo(x, Y(y + s * amp)); } st(p, 1, 24); };
+  const pGlyph = (x, y) => { ring(x + 6, y - 8, 42, 1); line(x - 36, y - 8, x - 36, y + 82); };
+  const lid = (x, y) => { const p = P(); p.moveTo(x - 56, Y(y - 4)); p.lineTo(x + 56, Y(y - 4)); p.moveTo(x - 44, Y(y - 4)); p.arc(x, Y(y - 4), 44, Math.PI, 0, true); st(p); };
+
+  switch (key) {
+    case 'neutral': ring(EL, 0); ring(ER, 0); d3(); break;
+    case 'listening': ring(EL, 0, 64); ring(ER, 0, 64); d3({ a: () => 0.55 + 0.45 * Math.sin(t * 4.2) }); break;
+    case 'talking': ring(EL, 0); ring(ER, 0); d3({ dy: k => Math.sin(t * 15 + k * 2.1) * 24 * o.talk, len: k => 64 + Math.sin(t * 11 + k * 1.3) * 22 * o.talk }); break;
+    case 'happy': caret(EL, 0); caret(ER, 0); d3({ y: 4 }); break;
+    case 'sad': cup(EL, 6); cup(ER, 6); d3({ y: -10 }); break;
+    case 'surprised': ring(EL, 0, 70); ring(ER, 0, 70); d3(); break;
+    case 'confused': ring(EL + 22, 0, 40); ring(ER - 22, 0, 40); dash(392, 0, 38); dash(632, 0, 38); question(512, 0); break;
+    case 'excited': chev(EL, 0, 1); chev(ER, 0, -1); d3(); break;
+    case 'tired': lid(EL, 0); lid(ER, 0); d3({ a: () => 0.75 }); break;
+    case 'wink': ring(EL, 0); aster(ER, 0); d3(); break;
+    case 'crying': ring(EL, 0); ring(ER, 0); d3(); [EL, ER].forEach((x, i) => { const u = (t * 0.7 + i * 0.45) % 1; tear(x, 96 + u * 70, Math.sin(u * Math.PI)); }); break;
+    case 'laughing': ring(EL, 0); zig(ER, 0, 1); d3(); break;
+    case 'giggling': zig(EL, 0, -1); zig(ER, 0, 1); d3(); break;
+    case 'shy': ring(EL, 0); ring(ER, 0); dash(374, 42, 44); dash(468, 0, 44); dash(556, 0, 44); dash(650, 42, 44); break;
+    case 'love': { const s = 1 + 0.07 * Math.sin(t * 7); heart(EL, 0, s); heart(ER, 0, s); d3(); break; }
+    case 'thinking': ring(EL, 0); dot(ER, 0, 28 * (0.86 + 0.14 * Math.sin(t * 5))); d3({ a: k => 0.25 + 0.75 * Math.pow(Math.max(0, Math.sin(t * 5.5 - k * 1.1)), 2) }); break;
+    case 'sleeping': [[330, 92, 62], [430, 52, 84], [548, 0, 108], [682, -66, 134]].forEach(([x, y, s], i) => zed(x, y + Math.sin(t * 1.6 + i) * 6, s, 0.55 + 0.45 * Math.sin(t * 1.6 + i * 0.9) ** 2)); break;
+    case 'dizzy': spiral(EL, 0, t * 4); spiral(ER, 0, t * 4); d3(); break;
+    case 'bored': dot(EL, 0, 40); dot(ER, 0, 40); dash(398, 0, 40); dash(512, 30, 58); dash(626, 0, 40); break;
+    case 'proud': caret(EL, 0); caret(ER, 0); d3({ y: 30 }); break;
+    case 'skeptical': ring(EL, 0); line(ER - 50, -44, ER + 50, -54); d3(); break;
+    case 'scared': bolt(EL, 0); bolt(ER, 0); d3(); break;
+    case 'determined': chev(EL, 0, 1); chev(ER, 0, -1); dash(366, 42, 44); dash(468, 0, 44); dash(556, 0, 44); dash(658, 42, 44); break;
+    case 'playful': chev(EL, 0, 1); ring(ER, 0); d3(); break;
+    case 'curious': dot(EL, 0, 22); ring(ER, 0); d3(); break;
+    case 'shocked': excl(EL - 24, 0); excl(EL + 24, 0); excl(ER - 24, 0); excl(ER + 24, 0); d3(); break;
+    case 'relaxed': wave(262, 762, 0, 20, 3.5, t * 1.6, false); break;
+    case 'gloating': quote(EL, 0, false); quote(ER, 0, false); d3(); break;
+    case 'nervous': quote(EL, 0, false); quote(ER, 0, true); d3(); break;
+    case 'jittery': wave(300, 724, Math.sin(t * 40) * 3, 34, 4.5, t * 6, true); break;
+    case 'cheeky': ring(EL, 0); pGlyph(ER, 0); dash(450, 0, 54); dash(560, 0, 54); break;
+    case 'peaceful': cup(EL, -4); cup(ER, -4); dash(512, 30, 62); break;
+    case 'glitch': {
+      const s = Math.floor(t * 9), r = n => { const v = Math.sin(n * 12.9898 + s * 78.233) * 43758.5453; return v - Math.floor(v); };
+      ring(EL + (r(1) - 0.5) * 30, (r(2) - 0.5) * 16, 52, 1); ring(ER + (r(3) - 0.5) * 30, (r(4) - 0.5) * 16, 52, 1);
+      d3({ a: k => r(5 + k) > 0.25 ? 1 : 0.15, dy: k => (r(9 + k) - 0.5) * 14 });
+      for (let i = 0; i < 7; i++) {
+        const cx = (i < 4 ? EL : ER) + (r(20 + i) - 0.5) * 170, cy = (r(30 + i) - 0.5) * 150, z = 10 + r(40 + i) * 12, p = P();
+        p.moveTo(cx, Y(cy - z)); p.lineTo(cx + z, Y(cy + z * 0.8)); p.lineTo(cx - z, Y(cy + z * 0.8)); p.closePath(); st(p, 0.85, 9);
+      }
+      break;
+    }
+    default: ring(EL, 0); ring(ER, 0); d3();
+  }
+  return it;
+}
+
+// Glow strokes: a wide warm halo, then a tight bright core (the sheet's neon look)
+function paintFace(ctx, key, o, s) {
+  const items = faceItems(key, o);
+  ctx.save();
+  ctx.translate(o.lx * 58, -o.ly * 34);
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  for (const [blur, warm] of [[30, 'rgba(255,172,20,0.95)'], [9, 'rgba(255,240,170,0.9)']]) {
+    for (const i of items) {
+      ctx.globalAlpha = i.a; ctx.shadowBlur = blur * s;
+      ctx.shadowColor = i.col === BLUE ? 'rgba(70,175,255,0.95)' : warm;
+      if (i.k === 's') { ctx.strokeStyle = i.col; ctx.lineWidth = i.w; ctx.stroke(i.p); } else { ctx.fillStyle = i.col; ctx.fill(i.p); }
+    }
+  }
+  ctx.restore();
+  ctx.globalAlpha = 1; ctx.shadowBlur = 0;
+}
+
+// Small navy screen used for the picker tiles, the face button and the chat avatar
+function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+function paintMini(cv, key, t, opts = {}) {
+  const ctx = cv.getContext('2d'), w = cv.width, h = cv.height;
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, w, h);
+  if (!opts.bare) {
+    const r = h * 0.3, g = ctx.createLinearGradient(0, 0, w * 0.3, h);
+    g.addColorStop(0, '#2B3E78'); g.addColorStop(0.55, '#1A2856'); g.addColorStop(1, '#131F47');
+    ctx.fillStyle = '#1C2A5E'; roundRect(ctx, 0, 0, w, h, r); ctx.fill();
+    ctx.fillStyle = g; roundRect(ctx, w * 0.035, h * 0.05, w * 0.93, h * 0.9, r * 0.9); ctx.fill();
+    const hl = ctx.createRadialGradient(w * 0.78, h * 0.18, 0, w * 0.78, h * 0.18, w * 0.5);
+    hl.addColorStop(0, 'rgba(120,140,190,0.35)'); hl.addColorStop(1, 'rgba(120,140,190,0)');
+    ctx.fillStyle = hl; roundRect(ctx, w * 0.035, h * 0.05, w * 0.93, h * 0.9, r * 0.9); ctx.fill();
+  }
+  const sc = (opts.zoom || 1.0) * w / FW;
+  ctx.setTransform(sc, 0, 0, sc, (w - FW * sc) / 2, (h - FH * sc) / 2);
+  paintFace(ctx, key, { t, open: 1, talk: 0.7, lx: 0, ly: 0 }, sc);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+}
+
+/* =====================================================================
+   2. CHARACTER VERSIONS — signed-distance shapes measured from the
+      reference renders (units: half the head's width = 1).
+   ===================================================================== */
+const VARIANTS = {
+  head: {
+    label: 'Head', floating: true, P0: [0, 0, 0], pivot: [0, 0, 0],
+    HS: [1.0, 0.72, 0.56], HN: 3.0, HE: 0.44, SHEAR: 0.07, TAPER: 0.0,
+    SH: [0.8, 0.56], SN: 3.0, SO: [0.03, 0.05], span: 1.0,
+    A: { bl: [-0.6, 0.58, -0.12], ml: [-0.71, 0.9, -0.12], tl: [-0.82, 1.22, -0.12], br: [0.33, 0.58, -0.14], mr: [0.39, 0.95, -0.14], tr: [0.45, 1.32, -0.14], r: [0.095, 0.112, 0.13] }, warm: 0,
+    extra: 'h = smin(h, sdEll(p - vec3(-0.34,-0.46,0.0), vec3(0.62,0.32,0.46)), 0.22);',
+    body: 'return 1e5;',
+    glow: `g += blob(ph, vec3(-0.72,-0.22,0.25), 0.34, vec3(0.26,0.5,0.84), 0.9);
+           g += blob(ph, vec3(-0.3,-0.62,0.25), 0.42, vec3(0.42,0.74,0.9), 1.0);
+           g += blob(ph, vec3(0.75,-0.5,0.15), 0.35, vec3(0.5,0.66,0.88), 0.5);`,
+    ground: -1.75, bound: { c: [-0.1, 0.25, 0], r: 1.7 }, frame: { y0: -1.8, y1: 1.5, x0: -1.25, x1: 1.25 },
+    rest: { yaw: 0.22, pitch: 0.05, roll: 0.0, hyaw: 0, hpitch: 0, hroll: 0 }
+  },
+  pod: {
+    label: 'Pod', floating: true, P0: [0, 0, 0], pivot: [0, 0, 0],
+    HS: [1.0, 1.03, 0.62], HN: 3.0, HE: 0.44, SHEAR: 0.05, TAPER: 0.05,
+    SH: [0.82, 0.52], SN: 3.0, SO: [0.01, 0.33], span: 1.0,
+    A: { bl: [-0.56, 0.9, -0.1], ml: [-0.64, 1.08, -0.1], tl: [-0.68, 1.22, -0.1], br: [0.29, 0.9, -0.12], mr: [0.36, 1.14, -0.12], tr: [0.45, 1.34, -0.12], r: [0.085, 0.09, 0.125] }, warm: 1,
+    extra: '', body: 'return 1e5;',
+    glow: `g += blob(ph, vec3(-0.18,-0.42,0.3), 0.34, vec3(0.28,0.76,0.92), 1.25);
+           g += blob(ph, vec3(0.6,-0.48,0.22), 0.3, vec3(0.32,0.5,0.88), 1.1);
+           g += blob(ph, vec3(-0.8,0.25,0.1), 0.32, vec3(0.5,0.62,0.86), 0.4);`,
+    ground: -1.9, bound: { c: [0, 0.2, 0], r: 1.75 }, frame: { y0: -1.95, y1: 1.5, x0: -1.25, x1: 1.25 },
+    rest: { yaw: 0.16, pitch: 0.04, roll: -0.04, hyaw: 0, hpitch: 0, hroll: 0 }
+  },
+  buddy: {
+    label: 'Buddy', floating: false, P0: [0, -0.66, 0], pivot: [0, -0.66, 0],
+    HS: [1.0, 0.75, 0.56], HN: 3.0, HE: 0.42, SHEAR: 0.06, TAPER: 0.0,
+    SH: [0.85, 0.56], SN: 3.0, SO: [0.02, 0.03], span: 1.0,
+    A: { bl: [-0.55, 0.62, -0.12], ml: [-0.64, 0.8, -0.12], tl: [-0.75, 0.98, -0.12], br: [0.38, 0.56, -0.14], mr: [0.41, 0.86, -0.14], tr: [0.44, 1.08, -0.14], r: [0.12, 0.13, 0.14] }, warm: 0,
+    extra: '',
+    body: `vec3 t = pb - vec3(0.11,0.0,0.0);
+      vec3 tb = t - vec3(0.0,-1.18,0.0);
+      float d = mix(extrude(sdSE(tb.xy, vec2(0.64,0.56), 2.4), tb.z, 0.5, 0.3), sdEll(tb, vec3(0.68,0.6,0.52)), 0.3);
+      float lg = min(sdRC(t, vec3(-0.31,-1.45,0.02), vec3(-0.315,-1.8,0.04), 0.215, 0.205), sdRC(t, vec3(0.32,-1.45,0.02), vec3(0.32,-1.8,0.04), 0.215, 0.205));
+      lg = smin(lg, min(sdEll(t-vec3(-0.32,-1.87,0.06), vec3(0.22,0.11,0.25)), sdEll(t-vec3(0.33,-1.87,0.06), vec3(0.22,0.11,0.25))), 0.08);
+      d = smin(d, lg, 0.1);
+      vec3 al = pb - vec3(-0.5,-0.84,0.04); al.xy = mat2(uArm.x,uArm.y,-uArm.y,uArm.x)*al.xy;
+      vec3 ar = pb - vec3(0.6,-0.84,0.04); ar.xy = mat2(uArm.z,uArm.w,-uArm.w,uArm.z)*ar.xy;
+      d = smin(d, min(sdRC(al, vec3(0.0), vec3(-0.3,-0.48,0.04), 0.14, 0.15), sdRC(ar, vec3(0.0), vec3(0.48,0.32,0.04), 0.155, 0.175)), 0.12);
+      return d;`,
+    glow: `vec3 t = pb - vec3(0.11,0.0,0.0);
+           g += blob(ph, vec3(0.0,-0.68,0.28), 0.32, vec3(0.24,0.45,0.84), 1.4);
+           g += blob(ph, vec3(-0.8,-0.2,0.15), 0.32, vec3(0.42,0.56,0.84), 0.5);
+           g += blob(t, vec3(-0.12,-1.3,0.32), 0.36, vec3(0.16,0.64,0.9), 2.4);
+           g += blob(t, vec3(0.1,-0.88,0.32), 0.33, vec3(0.17,0.37,0.82), 2.6);
+           g += blob(t, vec3(0.45,-1.3,0.2), 0.3, vec3(0.38,0.55,0.86), 1.0);
+           g += blob(t, vec3(0.0,-1.7,0.25), 0.3, vec3(0.5,0.8,0.9), 0.7);`,
+    ground: -1.98, bound: { c: [0.15, -0.6, 0], r: 1.9 }, frame: { y0: -2.0, y1: 1.2, x0: -1.25, x1: 1.4 },
+    rest: { yaw: 0.12, pitch: 0.03, roll: 0, hyaw: 0.08, hpitch: 0, hroll: 0 }
+  },
+  tall: {
+    label: 'Tall', floating: false, P0: [0, -0.6, 0], pivot: [0, -0.6, 0],
+    HS: [1.0, 0.67, 0.5], HN: 3.0, HE: 0.38, SHEAR: 0.03, TAPER: 0.0,
+    SH: [0.84, 0.52], SN: 3.0, SO: [0.0, 0.05], span: 1.0,
+    A: { bl: [-0.6, 0.53, -0.1], ml: [-0.68, 0.88, -0.1], tl: [-0.77, 1.2, -0.1], br: [0.41, 0.53, -0.12], mr: [0.45, 0.94, -0.12], tr: [0.49, 1.31, -0.12], r: [0.12, 0.125, 0.135] }, warm: 0,
+    extra: '',
+    body: `vec3 q = pb;
+      float d = sdRC(vec3(q.x,q.y,q.z*1.3), vec3(0.04,-0.62,0.0), vec3(0.04,-1.96,0.0), 0.24, 0.34)/1.3;
+      d = smin(d, sdEll(q-vec3(0.04,-1.32,0.0), vec3(0.42,0.52,0.31)), 0.22);
+      float lg = min(sdRC(q, vec3(-0.2,-2.15,0.0), vec3(-0.22,-3.78,0.02), 0.145, 0.14), sdRC(q, vec3(0.28,-2.15,0.0), vec3(0.3,-3.78,0.02), 0.15, 0.14));
+      lg = smin(lg, min(sdEll(q-vec3(-0.3,-3.86,0.06), vec3(0.24,0.11,0.26)), sdEll(q-vec3(0.33,-3.86,0.06), vec3(0.28,0.11,0.27))), 0.1);
+      d = smin(d, lg, 0.1);
+      vec3 l = q - vec3(-0.42,-0.92,0.0); l.xy = mat2(uArm.x,uArm.y,-uArm.y,uArm.x)*l.xy;
+      float al = smin(sdRC(l, vec3(0.0), vec3(-0.2,-0.42,0.02), 0.12, 0.115), sdRC(l, vec3(-0.2,-0.42,0.02), vec3(-0.38,-1.2,0.04), 0.115, 0.105), 0.05);
+      al = smin(al, sdEll(l-vec3(-0.38,-1.6,0.05), vec3(0.12,0.24,0.085)), 0.08);
+      al = min(al, min(sdRC(l, vec3(-0.45,-1.7,0.06), vec3(-0.47,-1.88,0.09), 0.038, 0.034), sdRC(l, vec3(-0.32,-1.74,0.08), vec3(-0.31,-1.9,0.11), 0.038, 0.034)));
+      vec3 r = q - vec3(0.48,-0.97,0.0); r.xy = mat2(uArm.z,uArm.w,-uArm.w,uArm.z)*r.xy;
+      vec3 E = vec3(0.65,0.17,0.04);
+      float ar = sdRC(r, vec3(0.0), E, 0.125, 0.115);
+      vec3 f = r - E; f.xy = mat2(uArm2.x,uArm2.y,-uArm2.y,uArm2.x)*f.xy;
+      ar = smin(ar, sdRC(f, vec3(0.0), vec3(0.25,0.4,0.01), 0.115, 0.105), 0.05);
+      vec3 hp = f - vec3(0.34,0.68,0.01);
+      float hand = sdEll(hp, vec3(0.17,0.19,0.09));
+      hand = min(hand, sdRC(hp, vec3(-0.1,0.07,0.0), vec3(-0.22,0.2,0.0), 0.05, 0.048));
+      hand = min(hand, sdRC(hp, vec3(-0.03,0.11,0.0), vec3(-0.08,0.29,0.0), 0.052, 0.05));
+      hand = min(hand, sdRC(hp, vec3(0.04,0.11,0.0), vec3(0.06,0.3,0.0), 0.052, 0.048));
+      hand = min(hand, sdRC(hp, vec3(0.11,0.07,0.0), vec3(0.2,0.24,0.0), 0.048, 0.045));
+      hand = min(hand, sdRC(hp, vec3(-0.12,-0.04,0.0), vec3(-0.27,0.04,0.02), 0.052, 0.048));
+      ar = smin(ar, hand, 0.06);
+      return smin(d, min(al, ar), 0.08);`,
+    glow: `g += blob(ph, vec3(-0.2,-0.55,0.15), 0.3, vec3(0.26,0.45,0.82), 0.6);
+           g += blob(pb, vec3(0.04,-1.5,0.22), 0.38, vec3(0.22,0.7,0.9), 1.8);
+           g += blob(pb, vec3(0.03,-0.98,0.2), 0.28, vec3(0.22,0.44,0.84), 1.4);
+           g += blob(pb, vec3(0.05,-2.0,0.2), 0.3, vec3(0.45,0.78,0.9), 0.6);`,
+    ground: -3.98, bound: { c: [0.35, -1.4, 0], r: 2.98 }, frame: { y0: -4.02, y1: 1.45, x0: -1.15, x1: 1.9 },
+    rest: { yaw: 0.08, pitch: 0.02, roll: 0, hyaw: 0.06, hpitch: 0, hroll: 0 }
+  }
+};
+
+for (const v of Object.values(VARIANTS)) { const A = v.A; ['ml', 'tl'].forEach(k => { A[k] = [A[k][0] - A.bl[0], A[k][1] - A.bl[1], A[k][2] - A.bl[2]]; }); ['mr', 'tr'].forEach(k => { A[k] = [A[k][0] - A.br[0], A[k][1] - A.br[1], A[k][2] - A.br[2]]; }); }
+
+/* =====================================================================
+   3. SHADER — raymarched frosted resin. Light enters the surface, is
+      scattered (milky), and picks up colour from glowing regions inside
+      the body before it reaches the eye.
+   ===================================================================== */
+const f1 = n => (+n).toFixed(4);
+const fv = a => `vec${a.length}(${a.map(f1).join(',')})`;
+
+function fragSource(v) {
+  const A = v.A;
+  return `
+precision highp float;
+uniform vec2 uRes; uniform float uTime;
+uniform vec3 uCamPos, uCamX, uCamY, uCamZ; uniform float uFocal;
+uniform mat3 uBodyInv; uniform vec3 uBodyPos; uniform vec3 uSquash;
+uniform mat3 uHeadInv; uniform vec3 uHeadPivot;
+uniform mat3 uAntInvL, uAntInvR;
+uniform vec4 uArm, uArm2;
+uniform sampler2D uFace;
+uniform float uGlow;
+uniform vec3 uBoundC; uniform float uBoundR; uniform float uGroundY;
+uniform vec3 uHaloP[3]; uniform vec4 uHaloC[3];
+
+const vec3 P0 = ${fv(v.P0)};
+const vec3 HS = ${fv(v.HS)}; const float HN = ${f1(v.HN)}; const float HE = ${f1(v.HE)}; const float SHEAR = ${f1(v.SHEAR)}; const float TAPER = ${f1(v.TAPER)};
+const vec2 SH = ${fv(v.SH)}; const float SN = ${f1(v.SN)}; const vec2 SO = ${fv(v.SO)}; const float FACE_SPAN = ${f1(v.span)};
+const vec3 ABL = ${fv(A.bl)}, AML = ${fv(A.ml)}, ATL = ${fv(A.tl)};
+const vec3 ABR = ${fv(A.br)}, AMR = ${fv(A.mr)}, ATR = ${fv(A.tr)};
+const vec3 AR = ${fv(A.r)};
+const float ANT_TOP = ${f1(v.HS[1] - A.bl[1])};
+const float TIP_Y = ${f1(A.tl[1])};
+const float WARM = ${f1(v.warm)};
+const float CURVE = ${f1(v.warm)};
+
+float smin(float a, float b, float k){ float h = max(k-abs(a-b),0.0)/k; return min(a,b) - h*h*k*0.25; }
+float smax(float a, float b, float k){ return -smin(-a,-b,k); }
+float sdRR(vec2 p, vec2 b, vec4 r){ r.xy = (p.x>0.0)?r.xy:r.zw; r.x = (p.y>0.0)?r.x:r.y; vec2 q = abs(p)-b+r.x; return min(max(q.x,q.y),0.0)+length(max(q,0.0))-r.x; }
+float extrude(float d2, float z, float hz, float e){ vec2 w = vec2(d2+e, abs(z)-hz+e); return min(max(w.x,w.y),0.0)+length(max(w,0.0))-e; }
+float sdEll(vec3 p, vec3 r){ float k0 = length(p/r); float k1 = length(p/(r*r)); return k0*(k0-1.0)/k1; }
+float sdRC(vec3 p, vec3 a, vec3 b, float r1, float r2){
+  vec3 ba = b-a; float l2 = dot(ba,ba); float rr = r1-r2; float a2 = l2-rr*rr; float il2 = 1.0/l2;
+  vec3 pa = p-a; float y = dot(pa,ba); float z = y-l2;
+  vec3 xv = pa*l2-ba*y; float x2 = dot(xv,xv); float y2 = y*y*l2; float z2 = z*z*l2;
+  float k = sign(rr)*rr*rr*x2;
+  if(sign(z)*a2*z2 > k) return sqrt(x2+z2)*il2-r2;
+  if(sign(y)*a2*y2 < k) return sqrt(x2+y2)*il2-r1;
+  return (sqrt(x2*a2*il2)+y*rr)*il2-r1;
+}
+float sdSE(vec2 p, vec2 b, float n){ vec2 q = max(abs(p)/b, 1e-4); return (pow(pow(q.x,n)+pow(q.y,n), 1.0/n)-1.0)*min(b.x,b.y); }
+vec4 blob(vec3 p, vec3 c, float r, vec3 col, float i){ vec3 d = p-c; float w = i*exp(-dot(d,d)/(r*r)); return vec4(col*w, w); }
+
+vec2 headUnit(vec3 p){
+  p.y -= SHEAR*p.x;
+  vec2 hb = vec2(HS.x*(1.0+TAPER*p.y/HS.y), HS.y);
+  float h = extrude(sdSE(p.xy, hb, HN), p.z, HS.z, HE);
+  ${v.extra}
+  vec3 q = p - vec3(SO, HS.z);
+  float cut = max(sdSE(q.xy, SH, SN), abs(q.z)-0.26);
+  h = smax(h, -cut, 0.12);
+  vec3 s = p - vec3(SO, HS.z-0.27);
+  float sd = extrude(sdSE(s.xy, SH-0.004, SN), s.z, 0.1, 0.075);
+  sd -= 0.05*clamp(1.0-dot(s.xy/SH, s.xy/SH), 0.0, 1.0);
+  return vec2(h, sd);
+}
+float antSeg(vec3 q, vec3 m, vec3 t){ return CURVE > 0.5 ? smin(sdRC(q,vec3(0.0),m,AR.x,AR.y), sdRC(q,m,t,AR.y,AR.z), 0.06) : sdRC(q,vec3(0.0),t,AR.x,AR.z); }
+float antL(vec3 ph, out float y){ vec3 q = uAntInvL*(ph-ABL); y = q.y; return antSeg(q, AML, ATL); }
+float antR(vec3 ph, out float y){ vec3 q = uAntInvR*(ph-ABR); y = q.y; return antSeg(q, AMR, ATR); }
+float antInfo(vec3 ph, out float y){ float yl, yr; float dl = antL(ph,yl), dr = antR(ph,yr); y = dl<dr ? yl : yr; return min(dl,dr); }
+float bodyV(vec3 pb){ ${v.body} }
+
+vec3 toBody(vec3 p, out float sc){ vec3 pb = uBodyInv*(p-uBodyPos); sc = min(uSquash.x, min(uSquash.y, uSquash.z)); return pb/uSquash; }
+vec3 toHead(vec3 pb){ return uHeadInv*(pb-uHeadPivot) + P0; }
+
+vec2 mapV(vec3 pb, vec3 ph){
+  vec2 hu = headUnit(ph);
+  float y; float f = smin(hu.x, antInfo(ph, y), 0.07);
+  f = smin(f, bodyV(pb), 0.05);
+  return vec2(f, hu.y);
+}
+vec2 map(vec3 p){ float sc; vec3 pb = toBody(p, sc); vec2 d = mapV(pb, toHead(pb))*sc; return d.x < d.y ? vec2(d.x, 0.0) : vec2(d.y, 1.0); }
+float mapF(vec3 p){ float sc; vec3 pb = toBody(p, sc); return mapV(pb, toHead(pb)).x*sc; }
+
+vec4 glowV(vec3 pb, vec3 ph){
+  vec4 g = vec4(0.0);
+  g += blob(ph, ABL+vec3(0.0,ANT_TOP*0.6,0.0), 0.26, vec3(0.62,0.97,0.9), (1.0-WARM)*uGlow);
+  g += blob(ph, ABR+vec3(0.0,ANT_TOP*0.6,0.0), 0.26, vec3(0.62,0.97,0.9), (1.0-WARM)*uGlow);
+  ${v.glow}
+  return g;
+}
+
+vec3 calcN(vec3 p){ vec2 e = vec2(1.0,-1.0)*0.0016; return normalize(e.xyy*map(p+e.xyy).x + e.yyx*map(p+e.yyx).x + e.yxy*map(p+e.yxy).x + e.xxx*map(p+e.xxx).x); }
+float calcAO(vec3 p, vec3 n){ float o = 0.0, s = 1.0; for(int i=0;i<4;i++){ float h = 0.02+0.08*float(i); o += (h-map(p+n*h).x)*s; s *= 0.72; } return clamp(1.0-1.7*o, 0.0, 1.0); }
+
+const vec3 LIGHT = vec3(-0.4,0.82,0.42);
+const vec3 THIN = vec3(0.89,0.92,0.95);
+const vec3 THICK = vec3(0.66,0.72,0.84);
+
+vec4 shadeFrost(vec3 p, vec3 n, vec3 rd, vec3 ph){
+  vec3 dir = refract(rd, n, 0.75); if(dot(dir,dir) < 0.5) dir = rd;
+  vec3 acc = vec3(0.0); float ws = 0.0, th = 0.0; vec3 q = p - n*0.02;
+  for(int i=0;i<10;i++){
+    q += dir*0.095; float sc; vec3 b = toBody(q, sc); vec3 h = toHead(b);
+    if(mapV(b,h).x*sc < 0.0){ th += 0.095; vec4 g = glowV(b,h); acc += g.rgb*0.095; ws += g.a*0.095; }
+  }
+  vec3 L = normalize(LIGHT); float wrap = clamp((dot(n,L)+0.8)/1.8, 0.0, 1.0);
+  float nv = clamp(dot(n,-rd), 0.0, 1.0);
+  vec3 col = mix(THIN, THICK, (1.0-exp(-th*2.0))*mix(1.0, 0.6, nv*nv));
+  col *= 0.9 + 0.12*wrap + 0.04*n.y;
+  vec3 ic = acc/max(ws, 1e-4); float is = 1.0-exp(-ws*2.2);
+  col = mix(col, ic, is*0.9);
+  float ay; float ad = antInfo(ph, ay);
+  if(ad < 0.03){
+    float g = (1.0-smoothstep(ANT_TOP*0.6, ANT_TOP+0.3, ay))*uGlow*(1.0-WARM);
+    float mid = smoothstep(ANT_TOP, ANT_TOP+0.25, ay)*(1.0-smoothstep(ANT_TOP+0.25, TIP_Y-0.05, ay));
+    col = mix(col, vec3(0.78,0.9,0.98), mid*0.45);
+    col = mix(col, vec3(0.88,1.0,0.98), g*0.9);
+    float tip = smoothstep(ANT_TOP*0.5, TIP_Y-0.04, ay)*WARM;
+    col = mix(col, mix(vec3(0.98,0.9,0.86), vec3(1.0,0.99,0.93), smoothstep(TIP_Y-0.15, TIP_Y, ay)), tip);
+  }
+  float fr = pow(1.0-clamp(dot(n,-rd),0.0,1.0), 3.0);
+  col = mix(col, vec3(0.87,0.9,0.95), fr*0.55);
+  float ao = calcAO(p, n);
+  col *= mix(vec3(0.6,0.68,0.9), vec3(1.0), 0.3+0.7*ao);
+  vec3 H = normalize(L-rd); col += pow(max(dot(n,H),0.0), 20.0)*0.06;
+  return vec4(col, 1.0);
+}
+
+vec4 shadeScreen(vec3 p, vec3 n, vec3 rd, vec3 ph){
+  vec2 sp = (ph.xy-SO)/SH;
+  vec3 col = vec3(0.17,0.235,0.4);
+  col = mix(col, vec3(0.25,0.36,0.58), smoothstep(-0.1, 1.1, sp.x*0.55+sp.y*0.65)*0.9);
+  col = mix(col, vec3(0.12,0.17,0.33), smoothstep(0.2, 1.3, -sp.x*0.5-sp.y*0.2)*0.5);
+  vec3 R = reflect(rd, n);
+  float box = smoothstep(0.75, 0.98, dot(R, normalize(vec3(0.5,0.7,0.5))));
+  float fr = pow(1.0-clamp(dot(n,-rd),0.0,1.0), 4.0);
+  col += vec3(0.22,0.3,0.45)*(box*0.35 + fr*0.5);
+  col *= mix(0.72, 1.0, calcAO(p, n));
+  vec2 q = ph.xy - SO; q.y -= SHEAR*ph.x; float span = 2.0*SH.x*FACE_SPAN;
+  vec2 uv = vec2(q.x/span+0.5, q.y/(span/1.6)+0.5);
+  if(uv.x>0.0 && uv.x<1.0 && uv.y>0.0 && uv.y<1.0){ vec4 f = texture2D(uFace, uv); col = mix(col, f.rgb, f.a); }
+  return vec4(col, 1.0);
+}
+
+float groundShadow(vec3 g){
+  vec3 L = normalize(vec3(0.12,1.0,0.22)); float res = 1.0, t = 0.05;
+  for(int i=0;i<22;i++){ float h = mapF(g+L*t); res = min(res, 3.2*h/t); t += clamp(h, 0.06, 0.5); if(res < 0.002 || t > 6.0) break; }
+  return clamp(res, 0.0, 1.0);
+}
+
+void main(){
+  vec2 uv = (gl_FragCoord.xy-0.5*uRes)/uRes.y;
+  vec3 ro = uCamPos; vec3 rd = normalize(uCamX*uv.x + uCamY*uv.y + uCamZ*uFocal);
+  vec4 outc = vec4(0.0);
+  vec3 oc = ro-uBoundC; float b = dot(oc,rd); float c = dot(oc,oc)-uBoundR*uBoundR; float h = b*b-c;
+  bool hit = false; float t = 0.0; vec2 res = vec2(1.0); float minA = 1e9;
+  if(h > 0.0){
+    float sh = sqrt(h); t = max(-b-sh, 0.0); float tf = -b+sh;
+    for(int i=0;i<96;i++){ res = map(ro+rd*t); if(res.x < 0.0012*t){ hit = true; break; } minA = min(minA, res.x/max(t,0.1)); t += res.x*0.88; if(t > tf) break; }
+  }
+  if(hit){
+    vec3 p = ro+rd*t; vec3 n = calcN(p);
+    float sc; vec3 pb = toBody(p, sc); vec3 ph = toHead(pb);
+    vec2 dd = mapV(pb, ph);
+    float px = t/(uRes.y*uFocal)*1.8;
+    float w = clamp(0.5 + (dd.x-dd.y)/(2.0*px), 0.0, 1.0);
+    vec4 s;
+    if(w > 0.98) s = shadeScreen(p, n, rd, ph);
+    else if(w < 0.02) s = shadeFrost(p, n, rd, ph);
+    else s = mix(shadeFrost(p, n, rd, ph), shadeScreen(p, n, rd, ph), w);
+    outc = vec4(s.rgb*s.a, s.a);
+  } else {
+    float pxA = 1.0/(uRes.y*uFocal);
+    float cov = 1.0-smoothstep(0.0, pxA*1.6, minA);
+    if(cov > 0.0) outc = vec4(THIN*0.97*cov*0.85, cov*0.85);
+  }
+  if(!hit && rd.y < 0.0){
+    float tg = (uGroundY-ro.y)/rd.y; vec3 g = ro+rd*tg;
+    vec2 dxz = g.xz-uBoundC.xz;
+    if(dot(dxz,dxz) < 9.0){
+      float sh = groundShadow(g);
+      float a = pow(1.0-sh, 1.4)*0.16*smoothstep(3.0, 1.2, length(dxz))*(1.0-outc.a);
+      outc += vec4(vec3(0.5,0.55,0.72)*a, a);
+    }
+  }
+  vec3 halo = vec3(0.0);
+  for(int i=0;i<3;i++){ vec3 cp = uHaloP[i]; float tt = max(dot(cp-ro, rd), 0.0); vec3 d = ro+rd*tt-cp; halo += uHaloC[i].rgb*uHaloC[i].a*exp(-dot(d,d)/0.045); }
+  outc.rgb += halo; outc.a = clamp(outc.a + max(halo.r, max(halo.g, halo.b))*0.6, 0.0, 1.0);
+  gl_FragColor = outc;
+}`;
+}
+const VERT = 'attribute vec2 a; void main(){ gl_Position = vec4(a,0.0,1.0); }';
+
+/* =====================================================================
+   4. WEBGL PLUMBING
+   ===================================================================== */
+const gl = canvas.getContext('webgl', { alpha: true, premultipliedAlpha: true, antialias: false, preserveDrawingBuffer: false });
+function showFallback(msg) { const f = document.createElement('div'); f.className = 'fallback'; f.textContent = msg; stage.appendChild(f); }
+if (!gl) showFallback('This browser could not start WebGL, so the 3D guide is hidden. The chat still works.');
+
+const faceCanvas = document.createElement('canvas'); faceCanvas.width = FW; faceCanvas.height = FH;
+const fctx = faceCanvas.getContext('2d');
+let faceTex = null, quad = null;
+const programs = {};
+if (gl) {
+  quad = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+  faceTex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, faceTex);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+}
+function program(key) {
+  if (programs[key]) return programs[key];
+  const mk = (type, src) => { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
+  const p = gl.createProgram();
+  gl.attachShader(p, mk(gl.VERTEX_SHADER, VERT)); gl.attachShader(p, mk(gl.FRAGMENT_SHADER, fragSource(VARIANTS[key])));
+  gl.bindAttribLocation(p, 0, 'a'); gl.linkProgram(p);
+  if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+  const u = {}; const n = gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS);
+  for (let i = 0; i < n; i++) { const info = gl.getActiveUniform(p, i); const nm = info.name.replace(/\[0\]$/, ''); u[nm] = gl.getUniformLocation(p, nm); }
+  return (programs[key] = { p, u });
+}
+
+/* Small 3×3 matrix kit (row-major arrays) */
+const M = {
+  rx: a => { const c = Math.cos(a), s = Math.sin(a); return [1, 0, 0, 0, c, -s, 0, s, c]; },
+  ry: a => { const c = Math.cos(a), s = Math.sin(a); return [c, 0, s, 0, 1, 0, -s, 0, c]; },
+  rz: a => { const c = Math.cos(a), s = Math.sin(a); return [c, -s, 0, s, c, 0, 0, 0, 1]; },
+  mul: (A, B) => { const r = new Array(9); for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) r[i * 3 + j] = A[i * 3] * B[j] + A[i * 3 + 1] * B[3 + j] + A[i * 3 + 2] * B[6 + j]; return r; },
+  tr: A => [A[0], A[3], A[6], A[1], A[4], A[7], A[2], A[5], A[8]],
+  ap: (A, v) => [A[0] * v[0] + A[1] * v[1] + A[2] * v[2], A[3] * v[0] + A[4] * v[1] + A[5] * v[2], A[6] * v[0] + A[7] * v[1] + A[8] * v[2]],
+  col: A => new Float32Array([A[0], A[3], A[6], A[1], A[4], A[7], A[2], A[5], A[8]])
+};
+const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]], sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+const scl = (a, s) => [a[0] * s, a[1] * s, a[2] * s], mulv = (a, b) => [a[0] * b[0], a[1] * b[1], a[2] * b[2]];
+const nrm = a => { const l = Math.hypot(...a) || 1; return scl(a, 1 / l); };
+const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+const euler = (yaw, pitch, roll) => M.mul(M.ry(yaw), M.mul(M.rx(pitch), M.rz(roll)));
+
+/* =====================================================================
+   5. STATE & MOTION
+   ===================================================================== */
+const S = {
+  variant: 'buddy', mode: 'idle', face: null, faceUntil: 0, busy: false, streaming: false, talk: 0,
+  typingUntil: 0, lastAct: performance.now(), ctl: null, waveUntil: 0
+};
+const pose = { lx: 0, ly: 0, yaw: 0, pitch: 0, roll: 0, hyaw: 0, hpitch: 0, hroll: 0, open: 1, blink: 0, nextBlink: 2.2 };
+const J = { y: 0, v: 0 }, SQ = { x: 0, v: 0 };
+const ants = [{ side: -1, x: 0, vx: 0, z: 0, vz: 0, k: 70 }, { side: 1, x: 0, vx: 0, z: 0, vz: 0, k: 82 }];
+const pointer = { x: 0, y: 0, inWin: false };
+const world = { Rb: M.ry(0), Rh: M.ry(0), bodyPos: [0, 0, 0], squash: [1, 1, 1], antRot: [M.ry(0), M.ry(0)], arm: [0, 0, 0], glow: 0.75 };
+let cam = null, prevYaw = 0, shownFace = '', tapCount = 0;
+
+const REACT = {
+  happy: { jump: 1.2, wave: 1 }, excited: { jump: 2.2, wave: 1, flick: 5 }, love: { jump: 1.0 }, proud: { jump: 0.7 }, playful: { jump: 0.9 },
+  surprised: { jump: 1.2, flick: 5 }, shocked: { jump: 1.7, flick: 8 }, laughing: { flick: 3 }, giggling: { flick: 4 }, cheeky: { flick: 2 }
+};
+function currentFace(now) {
+  if (S.face && now < S.faceUntil) return S.face;
+  return { idle: 'neutral', listening: 'listening', thinking: 'thinking', talking: 'talking', sleep: 'sleeping' }[S.mode] || 'neutral';
+}
+function jump(v) { if (J.y < 0.03) J.v = v * (reduce ? 0.35 : 1); SQ.v -= 2.5; }
+function showFace(key, ms = 4200) {
+  S.face = key; S.faceUntil = performance.now() + ms;
+  const r = REACT[key] || {};
+  if (r.jump) jump(r.jump);
+  if (r.flick) ants.forEach(a => { a.vz += r.flick * a.side; });
+  if (r.wave) S.waveUntil = performance.now() + 1700;
+}
+function wake() { S.lastAct = performance.now(); if (S.mode === 'sleep') { S.mode = 'idle'; showFace('surprised', 900); } }
+
+// continuous, per-face body language
+function faceMotion(f, t) {
+  const m = { roll: 0, pitch: 0, yaw: 0, x: 0, droop: 0 };
+  const amp = reduce ? 0.3 : 1;
+  switch (f) {
+    case 'sad': case 'crying': m.pitch = 0.16; m.droop = 1; break;
+    case 'tired': case 'bored': m.pitch = 0.1; m.droop = 0.6; m.roll = 0.07; break;
+    case 'sleeping': m.pitch = 0.14; m.droop = 1; m.roll = Math.sin(t * 0.8) * 0.05; break;
+    case 'thinking': m.roll = 0.11; m.pitch = -0.08; break;
+    case 'curious': m.roll = -0.13; m.pitch = 0.05; break;
+    case 'confused': m.roll = 0.15 * Math.sin(t * 1.4); break;
+    case 'shy': m.roll = -0.12; m.pitch = 0.12; m.yaw = -0.15; break;
+    case 'skeptical': m.roll = -0.1; m.yaw = -0.08; break;
+    case 'gloating': case 'proud': m.pitch = -0.1; m.roll = 0.05; break;
+    case 'wink': case 'cheeky': m.roll = 0.09; break;
+    case 'laughing': case 'giggling': m.pitch = Math.sin(t * 18) * 0.04 * amp; m.roll = Math.sin(t * 9) * 0.04 * amp; break;
+    case 'scared': case 'nervous': case 'jittery': m.x = Math.sin(t * 46) * 0.018 * amp; m.roll = Math.sin(t * 31) * 0.02 * amp; break;
+    case 'dizzy': m.roll = Math.sin(t * 3) * 0.12 * amp; m.pitch = Math.cos(t * 3) * 0.06 * amp; break;
+    case 'relaxed': case 'peaceful': m.roll = Math.sin(t * 0.9) * 0.06; break;
+    case 'determined': m.pitch = 0.05; break;
+    case 'glitch': { const s = Math.floor(t * 9); m.x = Math.sin(s * 91.7) * 0.03 * amp; m.roll = Math.sin(s * 13.1) * 0.05 * amp; break; }
+  }
+  return m;
+}
+
+function framing(v, w, h) {
+  const fov = 26 * Math.PI / 180, th = Math.tan(fov / 2), aspect = w / h;
+  const fr = v.frame, Hh = (fr.y1 - fr.y0) / 2, Wh = (fr.x1 - fr.x0) / 2;
+  const top = w < 520 ? 118 : 96, bot = 70, avail = Math.max(160, h - top - bot) / h;
+  const dist = Math.max(Hh / (th * avail), Wh / (th * aspect * 0.94)) * 1.04;
+  const worldPerPx = 2 * dist * th / h;
+  const target = [(fr.x0 + fr.x1) / 2, (fr.y0 + fr.y1) / 2 + (top - bot) / 2 * worldPerPx, 0];
+  const pos = add(target, [0, dist * 0.1, dist]);
+  const Z = nrm(sub(target, pos)), X = nrm(cross(Z, [0, 1, 0])), Y = cross(X, Z);
+  return { pos, X, Y, Z, focal: 0.5 / th };
+}
+function project(p) {
+  if (!cam) return null;
+  const d = sub(p, cam.pos), z = d[0] * cam.Z[0] + d[1] * cam.Z[1] + d[2] * cam.Z[2];
+  if (z <= 0) return null;
+  const x = (d[0] * cam.X[0] + d[1] * cam.X[1] + d[2] * cam.X[2]) * cam.focal / z;
+  const y = (d[0] * cam.Y[0] + d[1] * cam.Y[1] + d[2] * cam.Y[2]) * cam.focal / z;
+  return [W / 2 + x * H, H / 2 - y * H];
+}
+
+/* =====================================================================
+   6. RENDER LOOP
+   ===================================================================== */
+const maxQ = Math.min(window.devicePixelRatio || 1, 1.5);
+let quality = Math.min(1, maxQ), frameEMA = 16, lastAdj = 0, visible = true, last = performance.now(), W = 1, H = 1;
+const fixedQ = window.__KK_FIXED_Q || 0;
+new IntersectionObserver(e => { visible = e[0].isIntersecting; }).observe(stage);
+
+function resize() {
+  const r = stage.getBoundingClientRect(); W = Math.max(1, r.width); H = Math.max(1, r.height);
+  const q = fixedQ || quality;
+  canvas.width = Math.round(W * q); canvas.height = Math.round(H * q);
+  cam = framing(VARIANTS[S.variant], W, H);
+}
+new ResizeObserver(resize).observe(stage);
+
+let framesDrawn = 0;
+function frame(now) {
+  if (window.__KK_STOP && ++framesDrawn > window.__KK_STOP) return;
+  requestAnimationFrame(frame);
+  const dt = Math.min(0.05, (now - last) / 1000), ft = now - last; last = now;
+  const t = now / 1000;
+  const v = VARIANTS[S.variant];
+
+  if (!S.busy && S.mode === 'idle' && now - S.lastAct > 30000) S.mode = 'sleep';
+  const f = currentFace(now);
+  if (f !== shownFace) syncFaceUI(f);
+
+  // where the guide looks
+  let lx = pointer.inWin ? pointer.x : 0, ly = pointer.inWin ? pointer.y : 0;
+  if (f === 'thinking') { lx = 0.55 + Math.sin(t * 0.9) * 0.15; ly = 0.6; }
+  else if (f === 'sleeping' || f === 'sad' || f === 'crying') { lx = 0; ly = -0.4; }
+  else if (now < S.typingUntil) { lx = chatDir[0]; ly = chatDir[1]; }
+  const k = Math.min(1, dt * 5);
+  pose.lx = lerp(pose.lx, clamp(lx, -1, 1), k); pose.ly = lerp(pose.ly, clamp(ly, -1, 1), k);
+
+  // blinks
+  pose.nextBlink -= dt; if (pose.nextBlink <= 0) { pose.blink = 1; pose.nextBlink = 2.4 + Math.random() * 3.2; }
+  pose.blink = Math.max(0, pose.blink - dt * 7); pose.open = 1 - Math.sin(pose.blink * Math.PI);
+  S.talk = Math.max(0, S.talk - dt * 1.6);
+
+  const m = faceMotion(f, t), R = v.rest;
+  const lookYaw = pose.lx * 0.45, lookPitch = -pose.ly * 0.24;
+  const talkNod = f === 'talking' ? Math.sin(t * 7.3) * 0.03 * S.talk : 0;
+  let tY, tP, tR, hY = 0, hP = 0, hR = 0;
+  if (v.floating) { tY = R.yaw + lookYaw + m.yaw; tP = R.pitch + lookPitch + m.pitch + talkNod; tR = R.roll + m.roll; }
+  else { tY = R.yaw + lookYaw * 0.35; tP = R.pitch; tR = R.roll + m.roll * 0.3; hY = R.hyaw + lookYaw * 0.7 + m.yaw; hP = R.hpitch + lookPitch + m.pitch + talkNod; hR = R.hroll + m.roll; }
+  const hk = Math.min(1, dt * 5);
+  pose.yaw = lerp(pose.yaw, tY, hk); pose.pitch = lerp(pose.pitch, tP, hk); pose.roll = lerp(pose.roll, tR, hk);
+  pose.hyaw = lerp(pose.hyaw, hY, hk); pose.hpitch = lerp(pose.hpitch, hP, hk); pose.hroll = lerp(pose.hroll, hR, hk);
+  const yawVel = ((pose.yaw + pose.hyaw) - prevYaw) / Math.max(dt, 1e-3); prevYaw = pose.yaw + pose.hyaw;
+
+  // bob / jump / squash
+  J.v -= 16 * dt; J.y += J.v * dt;
+  if (J.y < 0) { if (J.v < -1.5) { SQ.v += -J.v * 2.2; ants.forEach(a => { a.vx += J.v * 0.5; }); } J.y = 0; J.v = 0; }
+  SQ.v += (-140 * SQ.x - 9 * SQ.v) * dt; SQ.x += SQ.v * dt;
+  const sleepy = f === 'sleeping';
+  const bob = v.floating ? Math.sin(t * 1.6) * (reduce ? 0.015 : sleepy ? 0.03 : 0.07) : 0;
+  const breathe = v.floating ? 0 : Math.sin(t * (sleepy ? 1.2 : 2.0)) * 0.012;
+  world.squash = [1 + SQ.x * 0.06 - breathe * 0.4, 1 - SQ.x * 0.08 + breathe, 1 + SQ.x * 0.06 - breathe * 0.4];
+  world.bodyPos = [m.x, bob + J.y, 0];
+
+  // antenna springs
+  for (const a of ants) {
+    a.vx += (-a.k * a.x - 4 * a.vx) * dt;
+    a.vz += (-a.k * a.z - 4 * a.vz + clamp(yawVel, -6, 6) * 0.8 * (reduce ? 0.3 : 1)) * dt;
+    a.x = clamp(a.x + a.vx * dt, -0.6, 0.6); a.z = clamp(a.z + a.vz * dt, -0.7, 0.7);
+  }
+  const droop = m.droop;
+  world.antRot = ants.map((a, i) => M.mul(M.rz(a.z + Math.sin(t * 1.3 + i * 1.7) * 0.03 - droop * 0.32 * a.side), M.rx(a.x + droop * 0.1)));
+
+  // arms (Buddy, Tall)
+  const waving = now < S.waveUntil ? Math.sin(Math.PI * (S.waveUntil - now) / 1700) : 0;
+  const idleWave = reduce ? 0 : clamp((Math.sin(t * 0.55) - 0.9) / 0.1, 0, 1) * 0.5;
+  const wv = Math.max(waving, idleWave) * (reduce ? 0.4 : 1);
+  let armL = Math.sin(t * 1.3) * 0.04 + droop * 0.06, armR = 0, arm2 = 0;
+  if (S.variant === 'buddy') armR = Math.sin(t * 10) * 0.32 * wv - droop * 0.5;
+  if (S.variant === 'tall') { arm2 = Math.sin(t * 9) * 0.38 * wv; armR = -droop * 0.6; }
+  world.arm = [armL, armR, arm2];
+
+  // antenna glow level
+  let glow = 0.75;
+  if (f === 'thinking') glow = 0.95 + 0.25 * Math.sin(t * 6);
+  else if (f === 'talking') glow = 0.75 + S.talk * 0.4;
+  else if (sleepy) glow = 0.25;
+  world.glow = lerp(world.glow, glow, Math.min(1, dt * 5));
+
+  world.Rb = euler(pose.yaw, pose.pitch, pose.roll); world.Rh = euler(pose.hyaw, pose.hpitch, pose.hroll);
+
+  if (!gl || !visible) return;
+  fctx.clearRect(0, 0, FW, FH);
+  paintFace(fctx, f, { t, open: pose.open, talk: S.talk, lx: pose.lx * 0.9, ly: pose.ly * 0.9 }, 1);
+
+  frameEMA = lerp(frameEMA, ft || 16, 0.05);
+  if (!fixedQ && now - lastAdj > 1200) {
+    lastAdj = now;
+    if (frameEMA > 24 && quality > 0.55) { quality = Math.max(0.55, quality - 0.15); resize(); }
+    else if (frameEMA < 15 && quality < maxQ) { quality = Math.min(maxQ, quality + 0.1); resize(); }
+  }
+  draw(t);
+}
+
+function toWorldFromHead(v, ph) {
+  const pb = add(M.ap(world.Rh, sub(ph, v.P0)), v.pivot);
+  return add(M.ap(world.Rb, mulv(pb, world.squash)), world.bodyPos);
+}
+
+function draw(t) {
+  const v = VARIANTS[S.variant], P = program(S.variant), u = P.u;
+  gl.viewport(0, 0, canvas.width, canvas.height);
+  gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.useProgram(P.p);
+  gl.bindBuffer(gl.ARRAY_BUFFER, quad); gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+  gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, faceTex);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, faceCanvas);
+  gl.uniform1i(u.uFace, 0);
+  gl.uniform2f(u.uRes, canvas.width, canvas.height); gl.uniform1f(u.uTime, t);
+  gl.uniform3fv(u.uCamPos, cam.pos); gl.uniform3fv(u.uCamX, cam.X); gl.uniform3fv(u.uCamY, cam.Y); gl.uniform3fv(u.uCamZ, cam.Z); gl.uniform1f(u.uFocal, cam.focal);
+  gl.uniformMatrix3fv(u.uBodyInv, false, M.col(M.tr(world.Rb))); gl.uniform3fv(u.uBodyPos, world.bodyPos); gl.uniform3fv(u.uSquash, world.squash);
+  gl.uniformMatrix3fv(u.uHeadInv, false, M.col(M.tr(world.Rh))); gl.uniform3fv(u.uHeadPivot, v.pivot);
+  gl.uniformMatrix3fv(u.uAntInvL, false, M.col(M.tr(world.antRot[0]))); gl.uniformMatrix3fv(u.uAntInvR, false, M.col(M.tr(world.antRot[1])));
+  const [aL, aR, a2] = world.arm;
+  gl.uniform4f(u.uArm, Math.cos(-aL), Math.sin(-aL), Math.cos(-aR), Math.sin(-aR));
+  gl.uniform4f(u.uArm2, Math.cos(-a2), Math.sin(-a2), 0, 0);
+  gl.uniform1f(u.uGlow, world.glow);
+  const bc = add(M.ap(world.Rb, mulv(v.bound.c, world.squash)), world.bodyPos);
+  gl.uniform3fv(u.uBoundC, bc); gl.uniform1f(u.uBoundR, v.bound.r * Math.max(...world.squash) + 0.15);
+  gl.uniform1f(u.uGroundY, v.ground);
+  // halo points: antenna roots (mint) and, on the Pod, a warm bulb tip
+  const A = v.A, hp = [], hc = [];
+  const antPt = (i, local) => toWorldFromHead(v, add(M.ap(world.antRot[i], local), i ? A.br : A.bl));
+  const top = v.HS[1] - A.bl[1];
+  hp.push(...antPt(0, [0, top + 0.05, 0]), ...antPt(1, [0, top + 0.05, 0]));
+  hc.push(0.35, 0.95, 0.8, 0.16 * world.glow, 0.35, 0.95, 0.8, 0.16 * world.glow);
+  hp.length = 0; hc.length = 0;
+  if (v.warm) { hp.push(...antPt(0, A.tl), ...antPt(1, A.tr), 0, -99, 0); hc.push(1.0, 0.78, 0.55, 0.16, 1.0, 0.78, 0.55, 0.16, 0, 0, 0, 0); }
+  else { hp.push(...antPt(0, [0, top + 0.05, 0]), ...antPt(1, [0, top + 0.05, 0]), 0, -99, 0); hc.push(0.35, 0.95, 0.8, 0.16 * world.glow, 0.35, 0.95, 0.8, 0.16 * world.glow, 0, 0, 0, 0); }
+  gl.uniform3fv(u.uHaloP, new Float32Array(hp)); gl.uniform4fv(u.uHaloC, new Float32Array(hc));
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
+  world.antTips = [antPt(0, A.tl), antPt(1, A.tr)];
+  world.antBases = [antPt(0, [0, top, 0]), antPt(1, [0, top, 0])];
+}
+
+/* =====================================================================
+   7. INTERACTION
+   ===================================================================== */
+let chatDir = [0.9, -0.15];
+function updateChatDir() {
+  const r = stage.getBoundingClientRect(), c = document.querySelector('.chat').getBoundingClientRect();
+  const dx = (c.left + c.width / 2) - (r.left + r.width / 2), dy = (c.top + c.height / 2) - (r.top + r.height / 2), l = Math.hypot(dx, dy) || 1;
+  chatDir = [clamp(dx / l, -1, 1) * 0.9, clamp(-dy / l, -1, 1) * 0.6];
+}
+function overGuide(x, y) {
+  if (!gl || !cam) return false;
+  const v = VARIANTS[S.variant], c3 = add(M.ap(world.Rb, v.bound.c), world.bodyPos);
+  const c = project(c3), e = project(add(c3, scl(cam.X, v.bound.r * 0.75)));
+  return !!(c && e) && Math.hypot(x - c[0], y - c[1]) < Math.hypot(e[0] - c[0], e[1] - c[1]);
+}
+addEventListener('pointermove', e => {
+  const r = stage.getBoundingClientRect();
+  pointer.x = clamp((e.clientX - (r.left + r.width / 2)) / (r.width / 2), -1.6, 1.6) * 0.85;
+  pointer.y = clamp(-(e.clientY - (r.top + r.height * 0.45)) / (r.height / 2), -1.4, 1.4) * 0.85;
+  pointer.inWin = true;
+  if (e.target === canvas) canvas.style.cursor = overGuide(e.clientX - r.left, e.clientY - r.top) ? 'pointer' : 'default';
+  wake();
+}, { passive: true });
+document.documentElement.addEventListener('pointerleave', () => { pointer.inWin = false; });
+addEventListener('keydown', wake);
+
+function segDist(p, a, b) { const ab = [b[0] - a[0], b[1] - a[1]], ap = [p[0] - a[0], p[1] - a[1]]; const t = clamp((ap[0] * ab[0] + ap[1] * ab[1]) / ((ab[0] ** 2 + ab[1] ** 2) || 1), 0, 1); return Math.hypot(ap[0] - ab[0] * t, ap[1] - ab[1] * t); }
+canvas.addEventListener('pointerdown', e => {
+  if (!gl) return;
+  const r = canvas.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+  if (world.antTips) {
+    const v = VARIANTS[S.variant];
+    for (let i = 0; i < 2; i++) {
+      const a = project(world.antBases[i]), b = project(world.antTips[i]), tip = project(add(world.antTips[i], scl(cam.X, v.A.r[2])));
+      if (a && b && tip && segDist([x, y], a, b) < Math.max(14, Math.hypot(tip[0] - b[0], tip[1] - b[1]) * 1.3)) {
+        ants[i].vz += 7 * ants[i].side; ants[i].vx -= 3; showFace(i ? 'wink' : 'playful', 1400); wake(); return;
+      }
+    }
+  }
+  // body: draw now and read back the pixel under the pointer
+  draw(performance.now() / 1000);
+  const px = new Uint8Array(4);
+  gl.readPixels(Math.floor(x / r.width * canvas.width), Math.floor((1 - y / r.height) * canvas.height), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
+  if (px[3] > 150) {
+    const pick = ['happy', 'excited', 'love', 'laughing', 'giggling', 'surprised', 'cheeky', 'proud'];
+    const f = pick[(tapCount++) % pick.length];
+    showFace(f, 1800);
+    if (!(REACT[f] && REACT[f].jump)) jump(1.3);
+    S.waveUntil = performance.now() + 1700;
+    wake();
+  }
+});
+
+/* Version switcher */
+const seg = $('seg');
+Object.entries(VARIANTS).forEach(([key, v]) => {
+  const b = document.createElement('button'); b.type = 'button'; b.textContent = v.label; b.dataset.v = key;
+  b.setAttribute('aria-pressed', 'false'); b.onclick = () => setVariant(key, true);
+  seg.appendChild(b);
+});
+function setVariant(key, greet) {
+  if (!VARIANTS[key]) return;
+  S.variant = key;
+  [...seg.children].forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === key)));
+  ants.forEach(a => { a.x = a.z = a.vx = a.vz = 0; });
+  const R = VARIANTS[key].rest;
+  Object.assign(pose, { yaw: R.yaw, pitch: R.pitch, roll: R.roll, hyaw: R.hyaw, hpitch: R.hpitch, hroll: R.hroll });
+  prevYaw = R.yaw + R.hyaw;
+  resize();
+  if (gl) { try { program(key); } catch (err) { console.error(err); } }
+  if (greet) { showFace('happy', 1500); try { localStorage.setItem('kk-variant', key); } catch (e) {} }
+}
+
+/* Face picker */
+const grid = $('grid'), sheet = $('sheet'), faceBtn = $('faceBtn');
+FACES.forEach(([key, name]) => {
+  const b = document.createElement('button'); b.type = 'button'; b.className = 'tile'; b.dataset.f = key; b.setAttribute('aria-pressed', 'false');
+  const c = document.createElement('canvas'); c.width = 208; c.height = 130;
+  const s = document.createElement('span'); s.textContent = name;
+  b.append(c, s); b.onclick = () => { showFace(key, 6000); wake(); };
+  grid.appendChild(b);
+});
+function paintTiles() { grid.querySelectorAll('.tile').forEach(b => paintMini(b.querySelector('canvas'), b.dataset.f, 0.7)); }
+function openSheet(open) { sheet.hidden = !open; faceBtn.setAttribute('aria-expanded', String(open)); if (open) paintTiles(); }
+faceBtn.onclick = () => openSheet(sheet.hidden);
+$('sheetClose').onclick = () => openSheet(false);
+function syncFaceUI(f) {
+  shownFace = f;
+  $('faceName').textContent = FACE_NAME[f] || 'Neutral';
+  paintMini($('faceMini'), f, performance.now() / 1000);
+  grid.querySelectorAll('.tile').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.f === f)));
+  paintMini($('avatar'), f, performance.now() / 1000, { bare: true, zoom: 1.05 });
+}
+
+/* =====================================================================
+   8. CHAT — Claude answers; a mood tag at the start of each reply
+      picks the guide's expression.
+   ===================================================================== */
+const log = $('log'), form = $('form'), q = $('q'), send = $('send'), foot = $('foot'), dot = $('dot'), status = $('status');
+const chips = [...document.querySelectorAll('.chip')];
+const MOODS = ['happy', 'excited', 'proud', 'love', 'curious', 'thinking', 'confused', 'surprised', 'playful', 'cheeky', 'wink', 'relaxed', 'peaceful', 'determined', 'skeptical', 'shy', 'sad', 'nervous'];
+const RULES = `You are the friendly guide mascot on learn.kaykav.academy, the learning platform for KayKav Academy's self-paced course "Built, Not Prompted". The course teaches non-developers (mostly designers) to plan, build and deploy real MVPs using AI tools.
+Speak warmly and plainly, like a patient senior builder. When you explain a technical idea, use one short everyday analogy.
+Keep every reply under 90 words. Plain text only: no markdown, no headings, no bold.
+If you are not sure about a specific detail of the course content, say so and suggest checking the lesson or asking in the community.
+Start every reply with exactly one mood tag that fits how you feel about your answer, chosen from: ${MOODS.map(m => '[' + m + ']').join(' ')}. Then a space, then the reply.`;
+const PERM = new Set(['not_granted', 'sampling_disabled', 'not_declared', 'capability_disabled', 'capability_removed']);
+const ERR = {
+  rate_limited: 'The guide needs a short break (usage limit reached). Try again in a little while.',
+  session_expired: 'Your Claude session expired. Sign in again, then resend.',
+  refused: 'The guide could not answer that one. Try rephrasing your question.',
+  empty_completion: 'The guide came back empty. Try asking in a different way.',
+  prompt_too_large: 'That message is too long. Try a shorter question.'
+};
+const turns = [];
+let live = null;
+let samplePromise = (window.claude && typeof window.claude.use === 'function') ? window.claude.use('sample').catch(() => null) : Promise.resolve(null);
+samplePromise.then(s => { if (live === null) { live = !!s; setFoot(); } });
+function setFoot() { foot.textContent = live ? 'Live answers from Claude. Each message uses your own Claude usage.' : 'Offline demo: scripted replies. Open this page inside Claude for live answers.'; }
+function setStatus(txt, s) { status.textContent = txt; dot.dataset.s = s || ''; }
+function addMsg(cls, text) { const d = document.createElement('div'); d.className = cls; d.textContent = text; log.appendChild(d); log.scrollTop = log.scrollHeight; return d; }
+const stripTag = s => (s || '').replace(/^\s*\[[a-z]+\]\s*/i, '');
+function setBusy(b) { S.busy = b; chips.forEach(c => c.disabled = b); send.textContent = b ? 'Stop' : 'Send'; send.classList.toggle('stop', b); send.type = b ? 'button' : 'submit'; }
+
+const CANNED = [
+  [/deploy|host|live|launch|vercel|netlify/i, '[determined] Deploying is like moving your cake from your kitchen to a shop window. On your laptop only you can taste it. Once it is hosted, anyone with the link can. Push your code to GitHub, connect the repo to your host, and it rebuilds the window every time you push.'],
+  [/api/i, '[happy] An API is a restaurant waiter. Your app reads the menu, places an order in an agreed format, and the waiter brings back exactly what the kitchen made. You never walk into the kitchen yourself.'],
+  [/error|stuck|bug|broken|fail/i, '[curious] Errors are clues, not verdicts. Copy the exact message, note what you clicked right before it appeared, and paste both into your AI tool along with the file it points to. Tell me the message here and we can read it together.'],
+  [/build|course|learn|mvp|module|lesson/i, '[proud] You take one idea from a rough brief to a live, deployed MVP. Think of it like building a house: plan the rooms, frame the structure, wire up the data and sign-in, then open the doors to real users.'],
+  [/./, '[playful] In this offline demo I only know a few scripted answers. On the live LMS I would answer anything about your lessons, your MVP, or an error you are stuck on. Try asking about deploying, APIs, or getting unstuck.']
+];
+function fakeStream(text, onText, signal) {
+  const reply = CANNED.find(([re]) => re.test(text))[1], words = reply.split(' ');
+  return new Promise((resolve, reject) => {
+    let i = 0, acc = '', timer;
+    const stop = () => { clearTimeout(timer); reject({ code: 'cancelled', text: acc }); };
+    signal.addEventListener('abort', stop, { once: true });
+    timer = setTimeout(function tick() {
+      acc += (i ? ' ' : '') + words[i++]; onText({ text: acc });
+      if (i < words.length) timer = setTimeout(tick, 40 + Math.random() * 50); else { signal.removeEventListener('abort', stop); resolve(acc); }
+    }, 900);
+  });
+}
+
+async function ask(text) {
+  text = text.trim(); if (!text || S.busy) return;
+  addMsg('msg me', text); turns.push({ role: 'user', content: text });
+  setBusy(true); S.streaming = false; S.face = null; S.mode = 'thinking'; setStatus('Thinking…', 'think');
+  const bubble = addMsg('msg bot pending', 'Thinking…');
+  const ctl = new AbortController(); S.ctl = ctl;
+  let mood = 'happy', shown = '';
+  const onText = ({ text: full }) => {
+    if (/^\s*\[[^\]]*$/.test(full)) return;
+    const mm = full.match(/^\s*\[([a-z]+)\]\s*/i);
+    if (mm) { mood = mm[1].toLowerCase(); full = full.slice(mm[0].length); }
+    if (!full) return;
+    if (!S.streaming) { S.streaming = true; S.mode = 'talking'; setStatus('Answering', 'talk'); bubble.classList.remove('pending'); }
+    S.talk = Math.min(1, S.talk + 0.3 + (full.length - shown.length) * 0.012);
+    shown = full; bubble.textContent = full; log.scrollTop = log.scrollHeight;
+  };
+  try {
+    const s = await samplePromise;
+    if (ctl.signal.aborted) throw { code: 'cancelled' };
+    let final;
+    if (s) {
+      try { final = (await s([{ role: 'user', content: RULES }, ...turns.slice(-12)], { cache: false, modelTier: 'quick', signal: ctl.signal, onText })).text; }
+      catch (e) {
+        if (!PERM.has(e && e.code)) throw e;
+        live = false; samplePromise = Promise.resolve(null); setFoot();
+        addMsg('note', 'Live answers are off for this view, so the guide is using scripted demo replies.');
+        log.appendChild(bubble);
+        final = await fakeStream(text, onText, ctl.signal);
+      }
+    } else final = await fakeStream(text, onText, ctl.signal);
+    bubble.textContent = stripTag(final) || shown; bubble.classList.remove('pending');
+    turns.push({ role: 'assistant', content: final });
+    setBusy(false); S.streaming = false; S.mode = 'idle'; setStatus('Ready');
+    showFace(FACE_NAME[mood] ? mood : 'happy', 3200);
+  } catch (e) {
+    const code = (e && e.code) || 'upstream_error';
+    const partial = code === 'refused' ? '' : stripTag(e && e.text);
+    if (partial) { bubble.textContent = partial + ' …'; bubble.classList.remove('pending'); turns.push({ role: 'assistant', content: partial }); } else bubble.remove();
+    if (code === 'cancelled') addMsg('note', 'Stopped.'); else { addMsg('note', ERR[code] || 'The connection dropped. Send your message again to retry.'); showFace('sad', 2500); }
+    setBusy(false); S.streaming = false; S.mode = 'idle'; setStatus('Ready');
+  }
+}
+form.addEventListener('submit', e => { e.preventDefault(); const val = q.value; q.value = ''; ask(val); });
+send.addEventListener('click', () => { if (S.busy && S.ctl) S.ctl.abort(); });
+chips.forEach(c => c.addEventListener('click', () => ask(c.textContent)));
+q.addEventListener('input', () => {
+  if (S.busy) return;
+  S.typingUntil = performance.now() + 1500; S.mode = 'listening';
+  clearTimeout(q._t); q._t = setTimeout(() => { if (!S.busy && S.mode === 'listening') S.mode = 'idle'; }, 1600);
+  wake();
+});
+
+/* ===== Boot ===== */
+let start = 'buddy';
+try { const sv = localStorage.getItem('kk-variant'); if (VARIANTS[sv]) start = sv; } catch (e) {}
+if (window.__KK_VARIANT) start = window.__KK_VARIANT;
+updateChatDir(); addEventListener('resize', updateChatDir);
+setVariant(start, false);
+if (gl && !programs[start]) showFallback('The 3D guide could not start on this device. The chat still works.');
+syncFaceUI('neutral');
+if (window.__KK_FACE) { S.face = window.__KK_FACE; S.faceUntil = Infinity; } else S.waveUntil = performance.now() + 2000;
+requestAnimationFrame(frame);
+window.__kk = { S, showFace, setVariant };
+})();
+</script>

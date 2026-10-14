@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KayKav Guide Demo</title>
+<link rel="stylesheet" href="/demo/demo.css">
+</head>
+<body>
+<main class="wrap">
+  <header class="top">
+    <div>
+      <p class="eyebrow">kaykav-guide · demo</p>
+      <h1>Course guide component</h1>
+    </div>
+    <div class="seg" role="group" aria-label="Character version" id="versions"></div>
+  </header>
+
+  <div class="layout">
+    <section class="stage-col">
+      <div class="stage" id="stage">
+        <canvas id="guide"></canvas>
+      </div>
+      <dl class="readout" id="readout" aria-live="off">
+        <div><dt>Tier</dt><dd id="r-tier">–</dd></div>
+        <div><dt>Buffer</dt><dd id="r-buf">–</dd></div>
+        <div><dt>Frame</dt><dd id="r-ms">–</dd></div>
+        <div><dt>Draws/s</dt><dd id="r-fps">–</dd></div>
+        <div class="wide"><dt>Why</dt><dd id="r-why">–</dd></div>
+      </dl>
+    </section>
+
+    <section class="panel">
+      <fieldset>
+        <legend>Quality tier</legend>
+        <div class="seg small" role="group" aria-label="Tier override" id="tiers"></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Mode</legend>
+        <div class="row" id="modes"></div>
+        <label class="slider">Talk level <input id="talk" type="range" min="0" max="1" step="0.01" value="0"> <output id="talk-out">0.00</output></label>
+        <button type="button" id="stream" class="btn">Simulate a streamed reply</button>
+      </fieldset>
+
+      <fieldset>
+        <legend>Actions</legend>
+        <div class="row">
+          <button type="button" class="btn" id="wave">Wave</button>
+          <button type="button" class="btn" id="jump">Jump</button>
+          <label class="check"><input type="checkbox" id="follow" checked> Pointer follow</label>
+          <label class="check"><input type="checkbox" id="compact"> 280 × 360 box</label>
+        </div>
+        <p class="log" id="log" aria-live="polite">Tap the guide or an antenna.</p>
+      </fieldset>
+
+      <fieldset>
+        <legend>Faces <span id="face-now" class="muted"></span></legend>
+        <div class="faces" id="faces"></div>
+      </fieldset>
+    </section>
+  </div>
+</main>
+<script type="module" src="/demo/main.ts"></script>
+</body>
+</html>

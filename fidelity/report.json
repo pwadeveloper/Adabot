@@ -1,0 +1,30 @@
+[
+  {
+    "version": "head",
+    "ref": "head.jpg",
+    "iou": 0.8861,
+    "target": 0.92,
+    "prototypeV2": 0.886
+  },
+  {
+    "version": "pod",
+    "ref": "pod.jpg",
+    "iou": 0.9037,
+    "target": 0.92,
+    "prototypeV2": 0.864
+  },
+  {
+    "version": "buddy",
+    "ref": "buddy.jpg",
+    "iou": 0.8913,
+    "target": 0.92,
+    "prototypeV2": 0.892
+  },
+  {
+    "version": "tall",
+    "ref": "tall.png",
+    "iou": 0.802,
+    "target": 0.9,
+    "prototypeV2": 0.76
+  }
+]

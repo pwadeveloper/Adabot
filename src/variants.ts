@@ -17,6 +17,8 @@ export interface Variant {
   P0: Vec3; pivot: Vec3;
   /** head half-size, superellipse exponent, edge rounding, shear (eye-line tilt), taper */
   HS: Vec3; HN: number; HE: number; SHEAR: number; TAPER: number;
+  /** shear of the screen opening and the face (the eye line); defaults to SHEAR */
+  SSHEAR?: number;
   /** screen half-size, exponent, centre offset, face texture span */
   SH: [number, number]; SN: number; SO: [number, number]; span: number;
   /** antenna root / mid / tip centres in head space, and radii (root, mid, tip) */
@@ -38,30 +40,36 @@ export interface Variant {
 export const VARIANTS: Record<Version, Variant> = {
   head: {
     label: 'Head', floating: true, P0: [0, 0, 0], pivot: [0, 0, 0],
-    HS: [1.0, 0.72, 0.56], HN: 3.0, HE: 0.44, SHEAR: 0.07, TAPER: 0.0,
-    SH: [0.8, 0.56], SN: 3.0, SO: [0.03, 0.05], span: 1.0,
-    A: { bl: [-0.6, 0.58, -0.12], ml: [-0.71, 0.9, -0.12], tl: [-0.82, 1.22, -0.12], br: [0.33, 0.58, -0.14], mr: [0.39, 0.95, -0.14], tr: [0.45, 1.32, -0.14], r: [0.095, 0.112, 0.13] },
+    HS: [1.015, 0.705, 0.56], HN: 2.8, HE: 0.425, SHEAR: 0.04, SSHEAR: 0.095, TAPER: -0.03,
+    SH: [0.725, 0.5], SN: 3.0, SO: [0.045, 0.036], span: 1.0,
+    A: { bl: [-0.56, 0.58, -0.12], ml: [-0.67, 0.9, -0.12], tl: [-0.78, 1.22, -0.12], br: [0.33, 0.58, -0.14], mr: [0.39, 0.95, -0.14], tr: [0.45, 1.32, -0.14], r: [0.095, 0.112, 0.13] },
     warm: 0,
-    extra: 'h = smin(h, sdEll(p - vec3(-0.34,-0.46,0.0), vec3(0.62,0.32,0.46)), 0.22);',
+    // the bottom-left lobe that hangs lowest
+    extra: 'h = smin(h, sdEll(p - vec3(-0.28,-0.40,0.0), vec3(0.50,0.32,0.46)), 0.20);',
     body: 'return 1e5;',
-    glow: `g += blob(ph, vec3(-0.72,-0.22,0.25), 0.34, vec3(0.26,0.5,0.84), 0.9);
+    glow: `g += blob(ph, vec3(-0.72,-0.22,0.25), 0.34, vec3(0.32,0.55,0.86), 0.75);
 g += blob(ph, vec3(-0.3,-0.62,0.25), 0.42, vec3(0.42,0.74,0.9), 1.0);
 g += blob(ph, vec3(0.75,-0.5,0.15), 0.35, vec3(0.5,0.66,0.88), 0.5);`,
     ground: -1.75, bound: { c: [-0.1, 0.25, 0], r: 1.7 }, frame: { y0: -1.8, y1: 1.5, x0: -1.25, x1: 1.25 },
-    rest: { yaw: 0.22, pitch: 0.05, roll: 0.0, hyaw: 0, hpitch: 0, hroll: 0 }
+    rest: { yaw: 0.18, pitch: 0.05, roll: 0.0, hyaw: 0, hpitch: 0, hroll: 0 }
   },
   pod: {
     label: 'Pod', floating: true, P0: [0, 0, 0], pivot: [0, 0, 0],
-    HS: [1.0, 1.03, 0.62], HN: 3.0, HE: 0.44, SHEAR: 0.05, TAPER: 0.05,
-    SH: [0.82, 0.52], SN: 3.0, SO: [0.01, 0.33], span: 1.0,
-    A: { bl: [-0.56, 0.9, -0.1], ml: [-0.64, 1.08, -0.1], tl: [-0.68, 1.22, -0.1], br: [0.29, 0.9, -0.12], mr: [0.36, 1.14, -0.12], tr: [0.45, 1.34, -0.12], r: [0.085, 0.09, 0.125] },
+    HS: [0.9775, 1.03, 0.62], HN: 2.85, HE: 0.41, SHEAR: 0.02, SSHEAR: 0.105, TAPER: 0.05,
+    SH: [0.763, 0.485], SN: 3.0, SO: [-0.04, 0.33], span: 1.0,
+    A: { bl: [-0.56, 0.9, -0.1], ml: [-0.64, 1.08, -0.1], tl: [-0.68, 1.22, -0.1], br: [0.29, 0.9, -0.12], mr: [0.36, 1.14, -0.12], tr: [0.45, 1.34, -0.12], r: [0.1, 0.1, 0.125] },
     warm: 1,
-    extra: '', body: 'return 1e5;',
-    glow: `g += blob(ph, vec3(-0.18,-0.42,0.3), 0.34, vec3(0.28,0.76,0.92), 1.25);
-g += blob(ph, vec3(0.6,-0.48,0.22), 0.3, vec3(0.32,0.5,0.88), 1.1);
-g += blob(ph, vec3(-0.8,0.25,0.1), 0.32, vec3(0.5,0.62,0.86), 0.4);`,
+    // the left side recedes toward the bottom
+    extra: '{ float wl = p.x < 0.0 ? 1.0 + 0.075*p.y/HS.y : 1.0; h = extrude(sdSE(vec2(p.x/wl, p.y), hb, HN), p.z, HS.z, HE); }',
+    body: 'return 1e5;',
+    // cyan patch left of centre, cobalt patch right, paler bottom-left (MEASUREMENTS known gap)
+    glow: `g += blob(ph, vec3(-0.12,-0.4,0.3), 0.3, vec3(0.26,0.76,0.93), 1.3);
+g += blob(ph, vec3(0.55,-0.3,0.22), 0.26, vec3(0.28,0.45,0.86), 1.3);
+g += blob(ph, vec3(-0.8,0.25,0.1), 0.32, vec3(0.5,0.62,0.86), 0.4);
+g += blob(ph, vec3(-0.45,-0.78,0.25), 0.36, vec3(0.86,0.91,0.96), 0.9);
+g += blob(ph, vec3(0.45,-0.85,0.2), 0.3, vec3(0.75,0.84,0.94), 0.6);`,
     ground: -1.9, bound: { c: [0, 0.2, 0], r: 1.75 }, frame: { y0: -1.95, y1: 1.5, x0: -1.25, x1: 1.25 },
-    rest: { yaw: 0.16, pitch: 0.04, roll: -0.04, hyaw: 0, hpitch: 0, hroll: 0 }
+    rest: { yaw: 0.16, pitch: 0.0, roll: 0.0, hyaw: 0, hpitch: 0, hroll: 0 }
   },
   buddy: {
     label: 'Buddy', floating: false, P0: [0, -0.66, 0], pivot: [0, -0.66, 0],

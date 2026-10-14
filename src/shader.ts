@@ -38,7 +38,7 @@ uniform vec3 uBoundC; uniform float uBoundR; uniform float uGroundY;
 uniform vec3 uHaloP[3]; uniform vec4 uHaloC[3];
 
 const vec3 P0 = ${fv(v.P0)};
-const vec3 HS = ${fv(v.HS)}; const float HN = ${f1(v.HN)}; const float HE = ${f1(v.HE)}; const float SHEAR = ${f1(v.SHEAR)}; const float TAPER = ${f1(v.TAPER)};
+const vec3 HS = ${fv(v.HS)}; const float HN = ${f1(v.HN)}; const float HE = ${f1(v.HE)}; const float SHEAR = ${f1(v.SHEAR)}; const float SSHEAR = ${f1(v.SSHEAR ?? v.SHEAR)}; const float TAPER = ${f1(v.TAPER)};
 const vec2 SH = ${fv(v.SH)}; const float SN = ${f1(v.SN)}; const vec2 SO = ${fv(v.SO)}; const float FACE_SPAN = ${f1(v.span)};
 const vec3 ABL = ${fv(A.bl)}, AML = ${fv(L.ml)}, ATL = ${fv(L.tl)};
 const vec3 ABR = ${fv(A.br)}, AMR = ${fv(L.mr)}, ATR = ${fv(L.tr)};
@@ -63,15 +63,16 @@ float sdRC(vec3 p, vec3 a, vec3 b, float r1, float r2){
 float sdSE(vec2 p, vec2 b, float n){ vec2 q = max(abs(p)/b, 1e-4); return (pow(pow(q.x,n)+pow(q.y,n), 1.0/n)-1.0)*min(b.x,b.y); }
 vec4 blob(vec3 p, vec3 c, float r, vec3 col, float i){ vec3 d = p-c; float w = i*exp(-dot(d,d)/(r*r)); return vec4(col*w, w); }
 
-vec2 headUnit(vec3 p){
-  p.y -= SHEAR*p.x;
+vec2 headUnit(vec3 p0){
+  vec3 p = p0; p.y -= SHEAR*p.x;
   vec2 hb = vec2(HS.x*(1.0+TAPER*p.y/HS.y), HS.y);
   float h = extrude(sdSE(p.xy, hb, HN), p.z, HS.z, HE);
   ${v.extra}
-  vec3 q = p - vec3(SO, HS.z);
+  vec3 ps = p0; ps.y -= SSHEAR*ps.x;
+  vec3 q = ps - vec3(SO, HS.z);
   float cut = max(sdSE(q.xy, SH, SN), abs(q.z)-0.26);
   h = smax(h, -cut, 0.12);
-  vec3 s = p - vec3(SO, HS.z-0.27);
+  vec3 s = ps - vec3(SO, HS.z-0.27);
   float sd = extrude(sdSE(s.xy, SH-0.004, SN), s.z, 0.1, 0.075);
   sd -= 0.05*clamp(1.0-dot(s.xy/SH, s.xy/SH), 0.0, 1.0);
   return vec2(h, sd);
@@ -121,37 +122,43 @@ vec3 shadeFrost(vec3 p, vec3 n, vec3 rd, vec3 ph){
   vec3 L = normalize(LIGHT); float wrap = clamp((dot(n,L)+0.8)/1.8, 0.0, 1.0);
   float nv = clamp(dot(n,-rd), 0.0, 1.0);
   vec3 col = mix(THIN, THICK, (1.0-exp(-th*2.0))*mix(1.0, 0.6, nv*nv));
-  col *= 0.9 + 0.12*wrap + 0.04*n.y;
+  col *= 0.93 + 0.09*wrap + 0.04*n.y;
+  // bounce light from the pale studio floor keeps undersides milky
+  col = mix(col, vec3(0.86,0.9,0.95), clamp(-n.y, 0.0, 1.0)*0.22);
   vec3 ic = acc/max(ws, 1e-4); float is = 1.0-exp(-ws*2.2);
   col = mix(col, ic, is*0.9);
-  float ay; float ad = antInfo(ph, ay);
+  float ay; float ad = antInfo(ph, ay); float onAnt = 0.0;
   if(ad < 0.03){
+    onAnt = 1.0;
     float g = (1.0-smoothstep(ANT_TOP*0.6, ANT_TOP+0.3, ay))*uGlow*(1.0-WARM);
     float mid = smoothstep(ANT_TOP, ANT_TOP+0.25, ay)*(1.0-smoothstep(ANT_TOP+0.25, TIP_Y-0.05, ay));
     col = mix(col, vec3(0.78,0.9,0.98), mid*0.45);
     col = mix(col, vec3(0.88,1.0,0.98), g*0.9);
     float tip = smoothstep(ANT_TOP*0.5, TIP_Y-0.04, ay)*WARM;
-    col = mix(col, mix(vec3(0.98,0.9,0.86), vec3(1.0,0.99,0.93), smoothstep(TIP_Y-0.15, TIP_Y, ay)), tip);
+    col = mix(col, mix(vec3(0.97,0.89,0.84), vec3(0.99,0.95,0.88), smoothstep(TIP_Y-0.15, TIP_Y, ay)), tip*0.85);
   }
   float fr = pow(1.0-nv, 3.0);
   col = mix(col, vec3(0.87,0.9,0.95), fr*0.55);
   float ao = calcAO(p, n);
-  col *= mix(vec3(0.6,0.68,0.9), vec3(1.0), 0.3+0.7*ao);
-  vec3 H = normalize(L-rd); col += pow(max(dot(n,H),0.0), 20.0)*0.06;
+  col *= mix(vec3(0.7,0.76,0.93), vec3(1.0), 0.35+0.65*ao);
+  // broad, dim sheen; on the narrow antennas a tight lobe reads as a hard dot, so widen it there
+  vec3 H = normalize(L-rd); col += pow(max(dot(n,H),0.0), mix(20.0, 5.0, onAnt))*mix(0.06, 0.035, onAnt);
   return col;
 }
 
 vec3 shadeScreen(vec3 p, vec3 n, vec3 rd, vec3 ph){
   vec2 sp = (ph.xy-SO)/SH;
-  vec3 col = vec3(0.17,0.235,0.4);
-  col = mix(col, vec3(0.25,0.36,0.58), smoothstep(-0.1, 1.1, sp.x*0.55+sp.y*0.65)*0.9);
-  col = mix(col, vec3(0.12,0.17,0.33), smoothstep(0.2, 1.3, -sp.x*0.5-sp.y*0.2)*0.5);
+  // sampled: centre #2b3d69, top-right reflection #3a578f, bottom-left #283f73, and a faint pillowy edge
+  vec3 col = vec3(0.169,0.239,0.412);
+  col = mix(col, vec3(0.227,0.341,0.561), smoothstep(-0.1, 1.1, sp.x*0.55+sp.y*0.65)*0.85);
+  col = mix(col, vec3(0.157,0.247,0.451), smoothstep(0.1, 1.2, -sp.x*0.5-sp.y*0.3)*0.8);
+  col *= mix(1.0, 0.92, smoothstep(0.6, 1.05, length(sp)));
   vec3 R = reflect(rd, n);
   float box = smoothstep(0.75, 0.98, dot(R, normalize(vec3(0.5,0.7,0.5))));
   float fr = pow(1.0-clamp(dot(n,-rd),0.0,1.0), 4.0);
-  col += vec3(0.22,0.3,0.45)*(box*0.35 + fr*0.5);
-  col *= mix(0.72, 1.0, calcAO(p, n));
-  vec2 q = ph.xy - SO; q.y -= SHEAR*ph.x; float span = 2.0*SH.x*FACE_SPAN;
+  col += vec3(0.22,0.3,0.45)*(box*0.3 + fr*0.3);
+  col *= mix(0.82, 1.0, calcAO(p, n));
+  vec2 q = ph.xy - SO; q.y -= SSHEAR*ph.x; float span = 2.0*SH.x*FACE_SPAN;
   vec2 uv = vec2(q.x/span+0.5, q.y/(span/1.6)+0.5);
   if(uv.x>0.0 && uv.x<1.0 && uv.y>0.0 && uv.y<1.0){ vec4 f = texture2D(uFace, uv); col = mix(col, f.rgb, f.a); }
   return col;

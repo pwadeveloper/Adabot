@@ -242,46 +242,130 @@ function faceGrid(t: number): string {
   return toURL(c);
 }
 
+/** The sheet and our grid next to each other at the same width. */
+async function faceCompare(sheetUrl: string, gridUrl: string): Promise<string> {
+  const [sheet, grid] = await Promise.all([loadImage(sheetUrl), loadImage(gridUrl)]);
+  const W = 900, hs = (sheet.naturalHeight * W) / sheet.naturalWidth, hg = (grid.naturalHeight * W) / grid.naturalWidth;
+  const [c, ctx] = canvasOf(W * 2 + 20, Math.ceil(Math.max(hs, hg)));
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, c.width, c.height);
+  ctx.drawImage(sheet, 0, 0, W, hs); ctx.drawImage(grid, W + 20, 0, W, hg);
+  return toURL(c, 'image/jpeg', 0.88);
+}
+
 /**
- * Flash check: mean luminance of the glyph layer over 4 s at 60 fps. Counts
- * opposing luminance swings larger than 10 % of the face's peak within any 1 s window.
+ * Flash check: luminance of the glyph layer over 4 s at 60 fps, measured per cell of an
+ * 8 × 5 grid over the screen (a glyph jumping in one spot is a flash even if the face's mean
+ * barely moves). A transition is a swing of more than 10 % of the brightest cell's peak
+ * against the previous direction; a flash is a pair of them. Returns the worst cell's worst
+ * 1 s window, in flashes per second.
  */
 function flashRate(face: FaceName): number {
-  const [c, ctx] = canvasOf(256, 160);
-  const lum: number[] = [];
+  const CW = 8, CH = 5, W = 256, H = 160, cw = W / CW, ch = H / CH;
+  const [, ctx] = canvasOf(W, H);
+  const series: number[][] = Array.from({ length: CW * CH }, () => []);
   for (let i = 0; i < 240; i++) {
-    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, 256, 160);
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, W, H);
     ctx.setTransform(0.25, 0, 0, 0.25, 0, 0);
     paintFace(ctx, face, { t: 10 + i / 60, open: 1, talk: 0.8, lx: 0, ly: 0 }, 0.25);
-    const d = ctx.getImageData(0, 0, 256, 160).data;
-    let s = 0;
-    for (let k = 0; k < d.length; k += 4) s += (0.2126 * d[k]! + 0.7152 * d[k + 1]! + 0.0722 * d[k + 2]!) * d[k + 3]! / 255;
-    lum.push(s);
+    const d = ctx.getImageData(0, 0, W, H).data, sums = new Array<number>(CW * CH).fill(0);
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      const k = (y * W + x) * 4;
+      sums[Math.floor(y / ch) * CW + Math.floor(x / cw)]! += ((0.2126 * d[k]! + 0.7152 * d[k + 1]! + 0.0722 * d[k + 2]!) * d[k + 3]!) / 255;
+    }
+    sums.forEach((v, c) => series[c]!.push(v));
   }
-  void c;
-  const thr = Math.max(...lum) * 0.1;
-  // a transition = luminance moving more than thr away from the last extreme, against the previous direction
-  const trans: number[] = [];
-  let ext = lum[0]!, dir = 0;
-  lum.forEach((v, i) => {
-    if (dir >= 0 && v > ext) { if (dir === 0 && v > ext + thr) { dir = 1; trans.push(i); } if (dir === 1) ext = v; }
-    if (dir <= 0 && v < ext) { if (dir === 0 && v < ext - thr) { dir = -1; trans.push(i); } if (dir === -1) ext = v; }
-    if (dir === 1 && v < ext - thr) { dir = -1; ext = v; trans.push(i); }
-    else if (dir === -1 && v > ext + thr) { dir = 1; ext = v; trans.push(i); }
-  });
-  // a flash is a pair of opposing transitions; report the worst 1 s window
+  const thr = Math.max(...series.map(s => Math.max(...s))) * 0.1;
   let worst = 0;
-  for (let i = 0; i < trans.length; i++) {
-    let n = 0;
-    for (let j = i; j < trans.length && trans[j]! - trans[i]! < 60; j++) n++;
-    worst = Math.max(worst, n / 2);
+  for (const lum of series) {
+    const trans: number[] = [];
+    let ext = lum[0]!, dir = 0;
+    lum.forEach((v, i) => {
+      if (dir === 0) { if (v > ext + thr) { dir = 1; ext = v; trans.push(i); } else if (v < ext - thr) { dir = -1; ext = v; trans.push(i); } }
+      else if (dir === 1) { if (v > ext) ext = v; else if (v < ext - thr) { dir = -1; ext = v; trans.push(i); } }
+      else if (v < ext) ext = v; else if (v > ext + thr) { dir = 1; ext = v; trans.push(i); }
+    });
+    for (let i = 0; i < trans.length; i++) {
+      let n = 0;
+      for (let j = i; j < trans.length && trans[j]! - trans[i]! < 60; j++) n++;
+      worst = Math.max(worst, n / 2);
+    }
   }
   return worst;
 }
 
+/** A still on the reference background colour, as a PNG data URL. */
+async function still(version: Version, w: number, h: number, level: Level): Promise<string> {
+  const cv = await renderStill(version, w, h, { level });
+  const [c, ctx] = canvasOf(w, h);
+  ctx.fillStyle = '#f0f3f0'; ctx.fillRect(0, 0, w, h); ctx.drawImage(cv, 0, 0);
+  return toURL(c);
+}
+
+/** Mean draw + finish time per level at the 750 px drawing-buffer cap (4:3 stage). */
+async function drawCost(version: Version, levels: Level[], n: number): Promise<Array<{ level: Level; ms: number; w: number; h: number; n: number }>> {
+  const h = 750, w = 1000, out: Array<{ level: Level; ms: number; w: number; h: number; n: number }> = [];
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const r = Renderer.create(c, { allowSoftware: true })!;
+  const face = document.createElement('canvas'); face.width = 512; face.height = 320;
+  paintFaceCanvas(face, 'neutral', { t: 0, open: 1, talk: 0, lx: 0, ly: 0 });
+  r.uploadFace(face);
+  const world = Rig.restWorld(version), cam = framing(VARIANTS[version], w, h);
+  for (const level of levels) {
+    while (r.request(version, level) === 'pending') await new Promise(res => setTimeout(res, 20));
+    r.draw(version, level, world, cam, w, h); r.gl.finish(); // warm-up
+    const t0 = performance.now();
+    for (let i = 0; i < n; i++) { r.draw(version, level, world, cam, w, h); r.gl.finish(); }
+    out.push({ level, ms: (performance.now() - t0) / n, w, h, n });
+  }
+  r.destroy();
+  return out;
+}
+
+// ---- tuning: score a patched variant quickly (low resolution, Medium level) ----
+const ORIGINAL = JSON.parse(JSON.stringify(VARIANTS)) as typeof VARIANTS;
+const refCache = new Map<string, { k: Mask; b: Box; w: number; h: number }>();
+
+function applyPatch(version: Version, patch: Record<string, unknown>): void {
+  const base = JSON.parse(JSON.stringify(ORIGINAL[version])) as Record<string, unknown>;
+  for (const [k, val] of Object.entries(patch)) {
+    const cur = base[k];
+    base[k] = cur && typeof cur === 'object' && !Array.isArray(cur) && val && typeof val === 'object' && !Array.isArray(val)
+      ? { ...cur, ...val } : val;
+  }
+  Object.assign(VARIANTS[version], base);
+}
+
+async function score(version: Version, refUrl: string, patch: Record<string, unknown>, width = 480): Promise<number> {
+  let ref = refCache.get(refUrl);
+  if (!ref) {
+    const img = await loadImage(refUrl), k = refMask(img);
+    ref = { k, b: bbox(k), w: img.naturalWidth, h: img.naturalHeight };
+    refCache.set(refUrl, ref);
+  }
+  applyPatch(version, patch);
+  const w = width, h = Math.round((width / ref.w) * ref.h);
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const r = Renderer.create(c, { allowSoftware: true, preserve: true })!;
+  while (r.request(version, 1) === 'pending') await new Promise(res => setTimeout(res, 20));
+  const face = document.createElement('canvas'); face.width = 64; face.height = 40; r.uploadFace(face);
+  r.draw(version, 1, Rig.restWorld(version), framing(VARIANTS[version], w, h), w, h);
+  const px = new Uint8Array(w * h * 4);
+  r.gl.readPixels(0, 0, w, h, r.gl.RGBA, r.gl.UNSIGNED_BYTE, px);
+  r.destroy();
+  const m = new Uint8Array(w * h);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) m[y * w + x] = px[((h - 1 - y) * w + x) * 4 + 3]! > 110 ? 1 : 0;
+  const ours: Mask = { m, w, h }, ob = bbox(ours);
+  const H = 400, pad = 10, wOf = (b: Box): number => ((b.x1 - b.x0) / (b.y1 - b.y0)) * H;
+  const W = Math.ceil(Math.max(wOf(ref.b), wOf(ob))) + 2 * pad;
+  const A = place(ref.k, ref.b, H, W, pad), B = place(ours, ob, H, W, pad);
+  let inter = 0, uni = 0;
+  for (let i = 0; i < A.length; i++) { inter += A[i]! & B[i]!; uni += A[i]! | B[i]!; }
+  return inter / uni;
+}
+
 declare global { interface Window { KK: unknown } }
 window.KK = {
-  fidelity, poster, posterFaceQuad, faceGrid, flashRate,
+  fidelity, poster, posterFaceQuad, faceGrid, faceCompare, flashRate, score, drawCost, still,
   faces: FACES.map(f => f[0]),
   ready: true
 };

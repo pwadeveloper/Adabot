@@ -11,7 +11,8 @@ export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const GL_ARGS = ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'];
 
 export async function withHarness(fn, { path = '/harness/index.html', viewport = { width: 800, height: 800 }, page: pageOpts = {} } = {}) {
-  const server = await createServer({ root: ROOT, logLevel: 'error', server: { port: 0, strictPort: false } });
+  // no file watching or HMR: edits during a long run must not reload the page
+  const server = await createServer({ root: ROOT, logLevel: 'error', server: { port: 0, strictPort: false, hmr: false, watch: null } });
   await server.listen();
   const url = server.resolvedUrls?.local?.[0] ?? `http://localhost:${server.config.server.port}/`;
   const browser = await chromium.launch({ args: GL_ARGS });
@@ -20,7 +21,7 @@ export async function withHarness(fn, { path = '/harness/index.html', viewport =
     page.on('pageerror', e => console.error('[page]', e.message));
     page.on('console', m => { if (m.type() === 'error') console.error('[page]', m.text()); });
     await page.goto(new URL(path.replace(/^\//, ''), url).href);
-    if (path.startsWith('/harness')) await page.waitForFunction(() => window.KK && window.KK.ready, null, { timeout: 60000 });
+    if (path.startsWith('/harness/index')) await page.waitForFunction(() => window.KK && window.KK.ready, null, { timeout: 60000 });
     return await fn(page, url);
   } finally {
     await browser.close();

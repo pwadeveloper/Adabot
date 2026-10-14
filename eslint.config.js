@@ -19,5 +19,5 @@ export default tseslint.config(
       '@typescript-eslint/restrict-plus-operands': ['error', { allowNumberAndString: true }]
     }
   },
-  { files: ['scripts/**/*.mjs', '*.js'], languageOptions: { globals: { ...globals.node, window: 'readonly', document: 'readonly', localStorage: 'readonly' } } }
+  { files: ['scripts/**/*.mjs', '*.js'], languageOptions: { globals: { ...globals.node, window: 'readonly', document: 'readonly', localStorage: 'readonly', requestAnimationFrame: 'readonly' } } }
 );

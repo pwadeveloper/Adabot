@@ -86,7 +86,7 @@ function faceItems(key: FaceName, o: FaceParams): Item[] {
     const p = P(); p.moveTo(x - 56, Y(y + 24)); p.quadraticCurveTo(x, Y(y - 70), x + 56, Y(y + 24)); st(p);
   };
   const cup = (x: number, y: number): void => {
-    const p = P(); p.moveTo(x - 50, Y(y - 22)); p.quadraticCurveTo(x, Y(y + 66), x + 50, Y(y - 22)); st(p);
+    const p = P(); p.moveTo(x - 64, Y(y - 30)); p.quadraticCurveTo(x, Y(y + 84), x + 64, Y(y - 30)); st(p);
   };
   const chev = (x: number, y: number, d: number): void => {
     const p = P(); p.moveTo(x - 34 * d, Y(y - 46)); p.lineTo(x + 38 * d, Y(y)); p.lineTo(x - 34 * d, Y(y + 46)); st(p);
@@ -105,32 +105,38 @@ function faceItems(key: FaceName, o: FaceParams): Item[] {
     }
     st(p, 1, 24);
   };
-  const zig = (x: number, y: number, d: number): void => {
+  // sizes below follow expression-sheet.jpg, relative to the ring
+  const zig = (x: number, y: number, d: number, k = 1.35): void => {
     const pts = [[-30, -50], [34, -30], [-20, 0], [34, 30], [-30, 50]] as const;
     const p = P();
-    pts.forEach(([px, py], i) => { if (i) p.lineTo(x + px * d, Y(y + py)); else p.moveTo(x + px * d, Y(y + py)); });
-    st(p, 1, 24);
+    pts.forEach(([px, py], i) => { if (i) p.lineTo(x + px * d * k, Y(y + py * k)); else p.moveTo(x + px * d * k, Y(y + py * k)); });
+    st(p, 1, 26);
   };
-  const bolt = (x: number, y: number): void => {
+  const bolt = (x: number, y: number, k = 1.6): void => {
     const p = P();
-    p.moveTo(x + 14, Y(y - 62)); p.lineTo(x - 26, Y(y + 6)); p.lineTo(x + 4, Y(y + 6));
-    p.lineTo(x - 12, Y(y + 64)); p.lineTo(x + 28, Y(y - 8)); p.lineTo(x - 2, Y(y - 8)); p.closePath();
-    st(p, 1, 20);
+    const pt = (px: number, py: number, first = false): void => { if (first) p.moveTo(x + px * k, Y(y + py * k)); else p.lineTo(x + px * k, Y(y + py * k)); };
+    pt(14, -62, true); pt(-26, 6); pt(4, 6); pt(-12, 64); pt(28, -8); pt(-2, -8); p.closePath();
+    st(p, 1, 22);
   };
-  const quote = (x: number, y: number, flip: boolean): void => {
-    const T = (px: number, py: number): [number, number] => flip ? [x - px, Y(y - py)] : [x + px, Y(y + py)];
-    const c = T(0, 16), p = P(); p.arc(c[0], c[1], 31, 0, Math.PI * 2); fl(p);
+  const quote = (x: number, y: number, flip: boolean, k = 1.45): void => {
+    const T = (px: number, py: number): [number, number] => flip ? [x - px * k, Y(y - py * k)] : [x + px * k, Y(y + py * k)];
+    const c = T(0, 16), p = P(); p.arc(c[0], c[1], 31 * k, 0, Math.PI * 2); fl(p);
     const q = P(), a = T(-26, 4), b = T(-30, -44), e = T(12, -60);
-    q.moveTo(a[0], a[1]); q.quadraticCurveTo(b[0], b[1], e[0], e[1]); st(q, 1, 22);
+    q.moveTo(a[0], a[1]); q.quadraticCurveTo(b[0], b[1], e[0], e[1]); st(q, 1, 22 * k);
   };
-  const excl = (x: number, y: number): void => { line(x, y - 58, x, y + 4, 1, 24); dot(x, y + 44, 14); };
+  const excl = (x: number, y: number): void => { line(x, y - 84, x, y + 10, 1, 28); dot(x, y + 66, 18); };
   const spiral = (x: number, y: number, rot: number): void => {
     const p = P(), tm = Math.PI * 2 * 1.75;
     for (let a = 0; a <= tm; a += 0.1) {
-      const r = 8 + 54 * (a / tm), px = x + Math.cos(a + rot) * r, py = Y(y) + Math.sin(a + rot) * r;
+      const r = 12 + 76 * (a / tm), px = x + Math.cos(a + rot) * r, py = Y(y) + Math.sin(a + rot) * r;
       if (a) p.lineTo(px, py); else p.moveTo(px, py);
     }
-    st(p, 1, 17);
+    st(p, 1, 24);
+  };
+  const tri = (x: number, y: number, r: number, up = true, a = 1, w = 14): void => {
+    const p = P(), d = up ? 1 : -1;
+    p.moveTo(x, Y(y - r * d)); p.lineTo(x + r * 0.95, Y(y + r * 0.62 * d)); p.lineTo(x - r * 0.95, Y(y + r * 0.62 * d)); p.closePath();
+    st(p, a, w);
   };
   const zed = (x: number, y: number, s: number, a: number): void => {
     const p = P();
@@ -144,10 +150,15 @@ function faceItems(key: FaceName, o: FaceParams): Item[] {
     p.bezierCurveTo(x + 40, Y(y - 12), x, Y(y - 10), x, Y(y + 20));
     st(p, 1, 24); dot(x, y + 60, 14);
   };
+  const tilde = (x: number, y: number, w = 170, amp = 22): void => {
+    const p = P();
+    for (let i = 0; i <= 24; i++) { const u = i / 24, px = x - w / 2 + u * w, py = Y(y - Math.sin(u * Math.PI * 2) * amp); if (i) p.lineTo(px, py); else p.moveTo(px, py); }
+    st(p, 1, 26);
+  };
   const tear = (x: number, y: number, a: number): void => {
     const p = P();
-    p.moveTo(x, Y(y - 30)); p.bezierCurveTo(x + 6, Y(y - 16), x + 19, Y(y - 2), x + 19, Y(y + 8));
-    p.arc(x, Y(y + 8), 19, 0, Math.PI); p.bezierCurveTo(x - 19, Y(y - 2), x - 6, Y(y - 16), x, Y(y - 30));
+    p.moveTo(x, Y(y - 40)); p.bezierCurveTo(x + 8, Y(y - 21), x + 26, Y(y - 3), x + 26, Y(y + 10));
+    p.arc(x, Y(y + 10), 26, 0, Math.PI); p.bezierCurveTo(x - 26, Y(y - 3), x - 8, Y(y - 21), x, Y(y - 40));
     fl(p, a, BLUE);
   };
   const wave = (x0: number, x1: number, y: number, amp: number, cyc: number, ph: number, tri: boolean): void => {
@@ -173,7 +184,8 @@ function faceItems(key: FaceName, o: FaceParams): Item[] {
     case 'listening': ring(EL, 0, RING + 6); ring(ER, 0, RING + 6); d3({ a: () => 0.55 + 0.45 * Math.sin(t * 4.2) }); break;
     case 'talking':
       ring(EL, 0); ring(ER, 0);
-      d3({ dy: k => Math.sin(t * 15 + k * 2.1) * 24 * o.talk, len: k => DASH + Math.sin(t * 11 + k * 1.3) * 22 * o.talk });
+      // ≤ 2 Hz so the moving dashes stay well under 3 flashes/s
+      d3({ dy: k => Math.sin(t * 12.5 + k * 2.1) * 24 * o.talk, len: k => DASH + Math.sin(t * 9 + k * 1.3) * 22 * o.talk });
       break;
     case 'happy': caret(EL, 0); caret(ER, 0); d3({ y: 4 }); break;
     case 'sad': cup(EL, 6); cup(ER, 6); d3({ y: -10 }); break;
@@ -189,42 +201,44 @@ function faceItems(key: FaceName, o: FaceParams): Item[] {
     case 'laughing': ring(EL, 0); zig(ER, 0, 1); d3(); break;
     case 'giggling': zig(EL, 0, -1); zig(ER, 0, 1); d3(); break;
     case 'shy': ring(EL, 0); ring(ER, 0); dash(374, 42, 44); dash(468, 0, 44); dash(556, 0, 44); dash(650, 42, 44); break;
-    case 'love': { const s = 1 + 0.07 * Math.sin(t * 7); heart(EL, 0, s); heart(ER, 0, s); d3(); break; }
+    case 'love': { const s = 2 * (1 + 0.07 * Math.sin(t * 7)); heart(EL, 10, s); heart(ER, 10, s); d3(); break; }
     case 'thinking':
-      ring(EL, 0); dot(ER, 0, 28 * (0.86 + 0.14 * Math.sin(t * 5)));
+      ring(EL, 0); dot(ER, 0, 48 * (0.88 + 0.12 * Math.sin(t * 5)));
       d3({ a: k => 0.25 + 0.75 * Math.pow(Math.max(0, Math.sin(t * 5.5 - k * 1.1)), 2) });
       break;
     case 'sleeping':
-      ([[330, 92, 62], [430, 52, 84], [548, 0, 108], [682, -66, 134]] as const).forEach(([x, y, s], i) =>
+      ([[318, 110, 74], [430, 58, 102], [560, -4, 128], [700, -74, 150]] as const).forEach(([x, y, s], i) =>
         zed(x, y + Math.sin(t * 1.6 + i) * 6, s, 0.55 + 0.45 * Math.sin(t * 1.6 + i * 0.9) ** 2));
       break;
     case 'dizzy': spiral(EL, 0, t * 4); spiral(ER, 0, t * 4); d3(); break;
-    case 'bored': dot(EL, 0, 40); dot(ER, 0, 40); dash(398, 0, 40); dash(512, 30, 58); dash(626, 0, 40); break;
+    case 'bored': dot(EL, 0, 62); dot(ER, 0, 62); dash(392, 0, 36); dash(512, 40, 64); dash(632, 0, 36); break;
     case 'proud': caret(EL, 0); caret(ER, 0); d3({ y: 30 }); break;
     case 'skeptical': ring(EL, 0); line(ER - 50, -44, ER + 50, -54); d3(); break;
     case 'scared': bolt(EL, 0); bolt(ER, 0); d3(); break;
     case 'determined': chev(EL, 0, 1); chev(ER, 0, -1); dash(366, 42, 44); dash(468, 0, 44); dash(556, 0, 44); dash(658, 42, 44); break;
     case 'playful': chev(EL, 0, 1); ring(ER, 0); d3(); break;
     case 'curious': dot(EL, 0, 22); ring(ER, 0); d3(); break;
-    case 'shocked': excl(EL - 24, 0); excl(EL + 24, 0); excl(ER - 24, 0); excl(ER + 24, 0); d3(); break;
-    case 'relaxed': wave(262, 762, 0, 20, 3.5, t * 1.6, false); break;
+    case 'shocked': excl(EL - 30, 0); excl(EL + 30, 0); excl(ER - 30, 0); excl(ER + 30, 0); d3(); break;
+    case 'relaxed': { const b = Math.sin(t * 1.6) * 6; tilde(300, b); tilde(512, -b); tilde(724, b); break; }
     case 'gloating': quote(EL, 0, false); quote(ER, 0, false); d3(); break;
     case 'nervous': quote(EL, 0, false); quote(ER, 0, true); d3(); break;
-    case 'jittery': wave(300, 724, Math.sin(t * 40) * 3, 34, 4.5, t * 6, true); break;
-    case 'cheeky': ring(EL, 0); pGlyph(ER, 0); dash(450, 0, 54); dash(560, 0, 54); break;
-    case 'peaceful': cup(EL, -4); cup(ER, -4); dash(512, 30, 62); break;
+    case 'jittery': wave(290, 734, Math.sin(t * 40) * 3, 42, 4, t * 6, false); break;
+    case 'cheeky': ring(EL, 0); pGlyph(ER + 6, 0); d3(); break;
+    case 'peaceful': cup(EL, -4); cup(ER, -4); dash(512, 34, 70); break;
     case 'glitch': {
       // Discrete glitch steps at GLITCH_RATE per second. The prototype stepped 9×/s and
       // dropped dashes to 15 % brightness, which flashed; this keeps brightness ≥ 55 %.
       const s = Math.floor(t * GLITCH_RATE);
       const r = (n: number): number => { const v = Math.sin(n * 12.9898 + s * 78.233) * 43758.5453; return v - Math.floor(v); };
-      ring(EL + (r(1) - 0.5) * 30, (r(2) - 0.5) * 16, 52, 1); ring(ER + (r(3) - 0.5) * 30, (r(4) - 0.5) * 16, 52, 1);
-      d3({ a: k => (r(5 + k) > 0.25 ? 1 : 0.55), dy: k => (r(9 + k) - 0.5) * 14 });
-      for (let i = 0; i < 7; i++) {
-        const cx = (i < 4 ? EL : ER) + (r(20 + i) - 0.5) * 170, cy = (r(30 + i) - 0.5) * 150, z = 10 + r(40 + i) * 12, p = P();
-        p.moveTo(cx, Y(cy - z)); p.lineTo(cx + z, Y(cy + z * 0.8)); p.lineTo(cx - z, Y(cy + z * 0.8)); p.closePath();
-        st(p, 0.85, 9);
+      // eyes are clusters of outlined triangles (as on the sheet) that jump a little each step
+      for (const [e, side] of [[EL, -1], [ER, 1]] as const) {
+        const jx = (r(1 + side) - 0.5) * 24, jy = (r(3 + side) - 0.5) * 14;
+        tri(e + jx, 16 + jy, 74);
+        tri(e - 44 * side + jx, -84 + jy, 22, false, 0.9, 12);
+        tri(e + 54 * side + jx, -50 + jy, 16, true, 0.9, 11);
+        tri(e - 58 * side + jx, 30 + jy, 13, true, 0.8, 10);
       }
+      d3({ a: k => (r(5 + k) > 0.25 ? 1 : 0.55), dy: k => (r(9 + k) - 0.5) * 14 });
       break;
     }
   }
@@ -241,7 +255,7 @@ export function paintFace(ctx: CanvasRenderingContext2D, key: FaceName, o: FaceP
   ctx.save();
   ctx.translate(o.lx * 58, -o.ly * 34);
   ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-  for (const [blur, warm] of [[30, 'rgba(255,172,20,0.95)'], [9, 'rgba(255,240,170,0.9)']] as const) {
+  for (const [blur, warm] of [[46, 'rgba(255,170,24,0.95)'], [10, 'rgba(255,240,170,0.9)']] as const) {
     for (const i of items) {
       ctx.globalAlpha = i.a; ctx.shadowBlur = blur * s;
       ctx.shadowColor = i.col === BLUE ? 'rgba(70,175,255,0.95)' : warm;

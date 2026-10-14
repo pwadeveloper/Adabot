@@ -29,7 +29,7 @@ export function halos(v: Variant, w: World): { p: Float32Array; c: Float32Array 
   if (v.warm) {
     return {
       p: new Float32Array([...pt(0, L.tl), ...pt(1, L.tr), 0, -99, 0]),
-      c: new Float32Array([1.0, 0.78, 0.55, 0.16, 1.0, 0.78, 0.55, 0.16, 0, 0, 0, 0])
+      c: new Float32Array([1.0, 0.8, 0.58, 0.07, 1.0, 0.8, 0.58, 0.07, 0, 0, 0, 0])
     };
   }
   const a = 0.16 * w.glow;
@@ -48,7 +48,7 @@ export function faceCorners(v: Variant, w: World): [Vec3, Vec3, Vec3, Vec3] {
   const at = (u: number, vv: number): Vec3 => {
     const qx = (u - 0.5) * span, qy = (vv - 0.5) * (span / 1.6);
     const x = qx + v.SO[0];
-    return headToWorld(v, w, [x, qy + v.SO[1] + v.SHEAR * x, z]);
+    return headToWorld(v, w, [x, qy + v.SO[1] + (v.SSHEAR ?? v.SHEAR) * x, z]);
   };
   // texture v = 1 is the canvas top (the texture is uploaded flipped)
   return [at(0, 1), at(1, 1), at(1, 0), at(0, 0)];

@@ -53,7 +53,7 @@ current expression ("KayKav course guide: Buddy, happy expression").
 | `setTalkLevel(0..1)` | call as reply text streams in; drives the dash "mouth" while the Talking face shows. Decays by itself (≈0.6 s from 1 to 0), so call it per chunk; `0` stops it at once |
 | `showFace(name, ms = 4200)` | any name from `FACES` (the prototype's keys, e.g. `'giggling'` is "Laughing hard"); `Infinity` holds it |
 | `clearFace()` | back to the mode's face |
-| `wave()`, `jump()` | Buddy and Tall wave an arm; Head and Pod wiggle their antennas |
+| `wave()`, `jump()` | Buddy lifts his right arm and waves, then lowers it; Tall waves his raised hand; Head and Pod wiggle their antennas |
 | `lookAt(x, y)` | gaze, both in −1..1 (right and up are positive). The next pointer move takes over while pointer-follow is on |
 | `setPointerFollow(on)` | |
 | `setTier(t)` | override the tier, or `'auto'` |
@@ -63,6 +63,10 @@ current expression ("KayKav course guide: Buddy, happy expression").
 | `destroy()` | stops the loop, disconnects observers, removes listeners and the poster layer, frees the GL context. A canvas hosts one guide: use a fresh canvas after `destroy()` |
 
 Antenna names in `tap` are from the viewer's side: `leftAntenna` is the one on the left of the screen.
+
+Buddy stands with both hands down. He raises his right arm only for a wave (`wave()`, a tap on
+the body, and the Happy and Excited reactions), and both arms for the Excited cheer. The
+fidelity reports still measure him in the reference render's waving pose.
 
 Also exported: `FACES` (`[key, label]` pairs), `FACE_NAMES`, `FACE_LABEL`, `MODES`, `VERSIONS`,
 `paintFaceTile(canvas, face)` (draws a face on its navy tile, for pickers) and the types.

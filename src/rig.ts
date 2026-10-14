@@ -28,6 +28,20 @@ const REACT: Partial<Record<FaceName, Reaction>> = {
 export const TAP_FACES: readonly FaceName[] = ['happy', 'excited', 'love', 'laughing', 'giggling', 'surprised', 'cheeky', 'proud'];
 export const reactionJumps = (f: FaceName): boolean => !!REACT[f]?.jump;
 
+/**
+ * Buddy's right arm is modelled raised (the reference render's waving pose). At rest it hangs
+ * by his side, rotated down by this much; gestures lift it back up.
+ */
+export const BUDDY_ARM_DOWN = -1.4;
+/** Buddy's left arm lifted up and out, for the Excited cheer. */
+const BUDDY_ARM_CHEER = -1.5;
+
+/**
+ * Which pose a still render uses: 'rest' is how the guide stands on the page (Buddy's hands
+ * down); 'reference' matches the reference renders (Buddy waving), for fidelity measurement.
+ */
+export type StillPose = 'rest' | 'reference';
+
 interface Motion { roll: number; pitch: number; yaw: number; x: number; droop: number }
 
 /** Continuous, per-face body language. */
@@ -82,6 +96,8 @@ export class Rig {
   ];
   private prevYaw = 0;
   private t = 0;
+  /** how far each of Buddy's arms is lifted for a gesture, 0 (hanging) .. 1 (raised) */
+  private lift = { l: 0, r: 0, tl: 0, tr: 0 };
   world: World = Rig.restWorld('buddy');
 
   constructor(version: Version, now: number) {
@@ -92,6 +108,7 @@ export class Rig {
   setVersion(v: Version): void {
     this.version = v;
     for (const a of this.ants) { a.x = a.z = a.vx = a.vz = 0; }
+    this.lift.l = this.lift.r = this.lift.tl = this.lift.tr = 0;
     const R = VARIANTS[v].rest;
     Object.assign(this.pose, { yaw: R.yaw, pitch: R.pitch, roll: R.roll, hyaw: R.hyaw, hpitch: R.hpitch, hroll: R.hroll });
     this.prevYaw = R.yaw + R.hyaw;
@@ -141,6 +158,7 @@ export class Rig {
     if (now < this.faceUntil || now < this.waveUntil || this.talk > 0.02) return true;
     if (J.y > 0 || Math.abs(J.v) > 0.01 || Math.abs(SQ.x) > 0.003 || Math.abs(SQ.v) > 0.03) return true;
     for (const a of this.ants) if (Math.abs(a.x) + Math.abs(a.z) > 0.004 || Math.abs(a.vx) + Math.abs(a.vz) > 0.04) return true;
+    if (Math.abs(this.lift.r - this.lift.tr) > 0.01 || Math.abs(this.lift.l - this.lift.tl) > 0.01) return true;
     return Math.abs(p.lx - this.gaze.x) > 0.01 || Math.abs(p.ly - this.gaze.y) > 0.01;
   }
 
@@ -219,12 +237,26 @@ export class Rig {
 
     // arms (Buddy, Tall)
     const waving = now < this.waveUntil ? Math.sin((Math.PI * (this.waveUntil - now)) / 1700) : 0;
-    const idleWave = reduce ? 0 : clamp((Math.sin(t * 0.55) - 0.9) / 0.1, 0, 1) * 0.5;
-    const wv = Math.max(waving, idleWave) * (reduce ? 0.4 : 1);
-    const armL = (reduce ? 0 : Math.sin(t * 1.3) * 0.04) + droop * 0.06;
-    let armR = 0, arm2 = 0;
-    if (this.version === 'buddy') armR = Math.sin(t * 10) * 0.32 * wv - droop * 0.5;
-    if (this.version === 'tall') { arm2 = Math.sin(t * 9) * 0.38 * wv; armR = -droop * 0.6; }
+    const sway = reduce ? 0 : Math.sin(t * 1.3) * 0.04;
+    let armL = sway + droop * 0.06, armR = 0, arm2 = 0;
+    if (this.version === 'buddy') {
+      // hands down unless a gesture needs them: waving lifts the right arm, Excited cheers with both
+      const L = this.lift, cheer = f === 'excited' && now < this.faceUntil;
+      L.tr = waving > 0 || cheer ? 1 : 0;
+      L.tl = cheer ? 1 : 0;
+      const up = Math.min(1, dt * 7), down = Math.min(1, dt * 4);
+      L.r += (L.tr - L.r) * (L.tr > L.r ? up : down);
+      L.l += (L.tl - L.l) * (L.tl > L.l ? up : down);
+      const wv = waving * (reduce ? 0.4 : 1);
+      const hang = BUDDY_ARM_DOWN - sway - droop * 0.06;
+      armR = lerp(hang, Math.sin(t * 10) * 0.32 * wv, L.r);
+      armL = lerp(armL, BUDDY_ARM_CHEER + Math.sin(t * 9) * 0.1 * (reduce ? 0.3 : 1), L.l);
+    }
+    if (this.version === 'tall') {
+      const idleWave = reduce ? 0 : clamp((Math.sin(t * 0.55) - 0.9) / 0.1, 0, 1) * 0.5;
+      arm2 = Math.sin(t * 9) * 0.38 * Math.max(waving, idleWave) * (reduce ? 0.4 : 1);
+      armR = -droop * 0.6;
+    }
     w.arm = [armL, armR, arm2];
 
     // antenna glow level
@@ -239,12 +271,13 @@ export class Rig {
     return f;
   }
 
-  /** The still pose used for posters, fidelity renders and Low-tier hit-testing. */
-  static restWorld(version: Version): World {
+  /** A still pose for posters, fidelity renders and Low-tier hit-testing (see StillPose). */
+  static restWorld(version: Version, pose: StillPose = 'rest'): World {
     const R = VARIANTS[version].rest;
+    const arm: Vec3 = version === 'buddy' && pose === 'rest' ? [0, BUDDY_ARM_DOWN, 0] : [0, 0, 0];
     return {
       Rb: euler(R.yaw, R.pitch, R.roll), Rh: euler(R.hyaw, R.hpitch, R.hroll),
-      bodyPos: [0, 0, 0], squash: [1, 1, 1], antRot: [IDENTITY, IDENTITY], arm: [0, 0, 0], glow: 0.75
+      bodyPos: [0, 0, 0], squash: [1, 1, 1], antRot: [IDENTITY, IDENTITY], arm, glow: 0.75
     };
   }
 }

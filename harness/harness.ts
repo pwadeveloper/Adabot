@@ -5,7 +5,7 @@ import { framing, project } from '../src/camera';
 import { FACES, FH, FW, paintFace, paintFaceCanvas, paintTile, type FaceName } from '../src/faces';
 import { faceCorners } from '../src/geometry';
 import { Renderer } from '../src/renderer';
-import { Rig } from '../src/rig';
+import { Rig, type StillPose } from '../src/rig';
 import type { Level } from '../src/shader';
 import { VARIANTS, type Version } from '../src/variants';
 
@@ -107,7 +107,7 @@ function place(k: Mask, b: Box, H: number, W: number, pad: number): Uint8Array {
   return out;
 }
 
-interface RenderOpts { level?: Level; face?: FaceName | null; t?: number; bg?: string | null }
+interface RenderOpts { level?: Level; face?: FaceName | null; t?: number; bg?: string | null; pose?: StillPose; arm?: [number, number, number] }
 
 const glCanvas = document.createElement('canvas');
 let renderer: Renderer | null = null;
@@ -123,7 +123,9 @@ async function renderStill(version: Version, w: number, h: number, o: RenderOpts
   const face = document.createElement('canvas'); face.width = FW; face.height = FH;
   if (o.face !== null) paintFaceCanvas(face, o.face ?? 'neutral', { t: o.t ?? 0, open: 1, talk: 0, lx: 0, ly: 0 });
   renderer.uploadFace(face);
-  renderer.draw(version, level, Rig.restWorld(version), framing(VARIANTS[version], w, h), w, h);
+  const world = Rig.restWorld(version, o.pose ?? 'rest');
+  if (o.arm) world.arm = o.arm;
+  renderer.draw(version, level, world, framing(VARIANTS[version], w, h), w, h);
   renderer.gl.finish();
   return glCanvas;
 }
@@ -146,7 +148,7 @@ async function fidelity(version: Version, refUrl: string, oursUrl?: string): Pro
   } else {
     rw = img.naturalWidth > 1200 ? Math.round(img.naturalWidth / 2) : img.naturalWidth;
     rh = Math.round((rw / img.naturalWidth) * img.naturalHeight);
-    cv = await renderStill(version, rw, rh, { level: 2 });
+    cv = await renderStill(version, rw, rh, { level: 2, pose: 'reference' }); // the references show Buddy waving
   }
   const d = pixels(cv, rw, rh);
   const ourM = new Uint8Array(rw * rh);
@@ -300,8 +302,8 @@ function flashRate(face: FaceName): number {
 }
 
 /** A still on the reference background colour, as a PNG data URL. */
-async function still(version: Version, w: number, h: number, level: Level): Promise<string> {
-  const cv = await renderStill(version, w, h, { level });
+async function still(version: Version, w: number, h: number, level: Level, arm?: [number, number, number], face?: FaceName): Promise<string> {
+  const cv = await renderStill(version, w, h, { level, ...(arm ? { arm } : {}), ...(face ? { face } : {}) });
   const [c, ctx] = canvasOf(w, h);
   ctx.fillStyle = '#f0f3f0'; ctx.fillRect(0, 0, w, h); ctx.drawImage(cv, 0, 0);
   return toURL(c);
@@ -326,6 +328,19 @@ async function drawCost(version: Version, levels: Level[], n: number): Promise<A
     out.push({ level, ms: (performance.now() - t0) / n, w, h, n });
   }
   r.destroy();
+  return out;
+}
+
+/** Buddy's arm angles over 6 s at 60 fps: wave() at 0.5 s, showFace('excited') at 3 s. */
+function armTimeline(): Array<[number, number, number]> {
+  const rig = new Rig('buddy', 0), out: Array<[number, number, number]> = [];
+  for (let i = 0; i <= 360; i++) {
+    const now = 1000 + i * (1000 / 60);
+    if (i === 30) rig.wave(now);
+    if (i === 180) rig.showFace('excited', 1500, now);
+    rig.tick(now, 1 / 60);
+    if (i % 15 === 0) out.push([+(i / 60).toFixed(2), +rig.world.arm[0].toFixed(2), +rig.world.arm[1].toFixed(2)]);
+  }
   return out;
 }
 
@@ -356,7 +371,7 @@ async function score(version: Version, refUrl: string, patch: Record<string, unk
   const r = Renderer.create(c, { allowSoftware: true, preserve: true })!;
   while (r.request(version, 1) === 'pending') await new Promise(res => setTimeout(res, 20));
   const face = document.createElement('canvas'); face.width = 64; face.height = 40; r.uploadFace(face);
-  r.draw(version, 1, Rig.restWorld(version), framing(VARIANTS[version], w, h), w, h);
+  r.draw(version, 1, Rig.restWorld(version, 'reference'), framing(VARIANTS[version], w, h), w, h);
   const px = new Uint8Array(w * h * 4);
   r.gl.readPixels(0, 0, w, h, r.gl.RGBA, r.gl.UNSIGNED_BYTE, px);
   r.destroy();
@@ -373,7 +388,7 @@ async function score(version: Version, refUrl: string, patch: Record<string, unk
 
 declare global { interface Window { KK: unknown } }
 window.KK = {
-  fidelity, poster, posterFaceQuad, faceGrid, faceCompare, flashRate, score, drawCost, still,
+  fidelity, poster, posterFaceQuad, faceGrid, faceCompare, flashRate, score, drawCost, still, armTimeline,
   faces: FACES.map(f => f[0]),
   ready: true
 };

@@ -33,7 +33,8 @@ async function capturePrototype(browserPage, base, version) {
   await p.goto(new URL('handoff/prototype/kaykav-guide.html', base).href);
   await p.addStyleTag({ content: 'html,body,.stage{background:transparent!important;border:0!important}.stage-top,.stage-bottom,.chat,.sheet{visibility:hidden!important}' });
   await p.waitForTimeout(4000);
-  const png = await p.locator('#gl').screenshot({ omitBackground: true });
+  const clip = await p.locator('#gl').boundingBox();
+  const png = await p.screenshot({ clip, omitBackground: true, timeout: 120000 });
   await ctx.close();
   return 'data:image/png;base64,' + png.toString('base64');
 }

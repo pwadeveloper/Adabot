@@ -2,29 +2,29 @@
   {
     "version": "head",
     "ref": "head.jpg",
-    "iou": 0.8861,
+    "iou": 0.9395,
     "target": 0.92,
-    "prototypeV2": 0.886
+    "handoffV2": 0.886
   },
   {
     "version": "pod",
     "ref": "pod.jpg",
-    "iou": 0.9037,
+    "iou": 0.9325,
     "target": 0.92,
-    "prototypeV2": 0.864
+    "handoffV2": 0.864
   },
   {
     "version": "buddy",
     "ref": "buddy.jpg",
-    "iou": 0.8913,
+    "iou": 0.9226,
     "target": 0.92,
-    "prototypeV2": 0.892
+    "handoffV2": 0.892
   },
   {
     "version": "tall",
     "ref": "tall.png",
-    "iou": 0.802,
+    "iou": 0.7971,
     "target": 0.9,
-    "prototypeV2": 0.76
+    "handoffV2": 0.76
   }
 ]

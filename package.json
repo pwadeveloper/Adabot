@@ -30,7 +30,8 @@
     "faces": "node scripts/faces.mjs",
     "posters": "node scripts/posters.mjs",
     "bench": "node scripts/bench.mjs",
-    "check:react": "node scripts/react-check.mjs"
+    "check:react": "node scripts/react-check.mjs",
+    "check:runtime": "node scripts/runtime-check.mjs"
   },
   "peerDependencies": {
     "react": ">=18"

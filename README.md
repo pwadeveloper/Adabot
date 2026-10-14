@@ -129,7 +129,9 @@ and only when the face actually changes.
 **Accessibility.** `role="img"` with a label that includes the current expression. Reduced
 motion selects the Low tier: no bob, no shake, no animated glyphs. Under a forced live tier
 it still cuts body motion. The Glitch face steps 2.5×/s and never drops below 55 % brightness.
-`npm run faces` measures every face for flashes; the worst is 1 per second.
+`npm run faces` measures every face for flashes, per cell of an 8 × 5 grid over the screen
+(a glyph jumping in one spot is a flash even if the face's average brightness barely moves):
+the worst is Talking at 2 per second. The prototype's Glitch measured 4.5.
 
 ## Development
 
@@ -143,6 +145,8 @@ npm run fidelity   # silhouette IoU vs the references → fidelity/
 npm run faces      # expression grid + flash check → fidelity/faces.png
 npm run posters    # re-render the Low-tier posters → public/posters/
 npm run bench      # frame time per tier on this machine
+npm run check:runtime  # lazy start, offscreen/hidden stop, 20 fps idle, Low for reduced motion / Data Saver, destroy()
+npm run check:react    # <KayKavGuide /> under React StrictMode
 ```
 
 The tooling scripts start a Vite server and drive headless Chromium with Playwright, using
@@ -154,10 +158,14 @@ WebGL there too; `?tier=low|medium|high` and `?v=head|pod|buddy|tall` preset the
 
 `npm run fidelity` follows `handoff/MEASUREMENTS.md`: reference background = median of a 20 px
 border; character = RGB distance > 22; 7 px median filter; our render on a transparent
-background with alpha > 110; both scaled to the same bbox height and centred; IoU. One addition:
-mask components that lie entirely below the main silhouette are dropped, because the Pod's floor
-shadow passes the threshold and would stretch its bbox (MEASUREMENTS.md's Pod body range
-excludes it too).
+background with alpha > 110; both scaled to the same bbox height and centred; IoU. Two
+additions, both about floor shadows, which pass the RGB-distance threshold and would stretch the
+reference bbox (MEASUREMENTS.md's body ranges exclude them):
+
+- neutral grey pixels (max − min of RGB ≤ 12) are shadow, never resin: every part of the
+  character is tinted (the palest rim, `#d3d9e4`, has 17) while the contact shadows under Buddy's
+  and Tall's feet are ≈ 8;
+- mask components that lie entirely below the main silhouette are dropped (the Pod's floor shadow).
 
 It writes per version: `<v>-overlay.png` (red = reference only, green = ours only),
 `<v>-side-by-side.jpg` (same scale) and `<v>-render.jpg`, plus `report.json`.

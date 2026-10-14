@@ -23,7 +23,12 @@ function pixels(src: CanvasImageSource, w: number, h: number): Uint8ClampedArray
   return ctx.getImageData(0, 0, w, h).data;
 }
 
-/** Steps 1–3: background = median of a 20 px border; RGB distance > 22; 7 px median filter. */
+/**
+ * Steps 1–3: background = median of a 20 px border; RGB distance > 22; 7 px median filter.
+ * Plus: neutral grey pixels (max − min of RGB ≤ 12) are floor shadow, never resin. Every part
+ * of the character is tinted (the palest rim, #d3d9e4, has 17); the contact shadows under
+ * Buddy's and Tall's feet are grey (≈ 8) and would otherwise stretch the bbox.
+ */
 function refMask(img: HTMLImageElement): Mask {
   const w = img.naturalWidth, h = img.naturalHeight, d = pixels(img, w, h);
   const ch: number[][] = [[], [], []];
@@ -34,8 +39,9 @@ function refMask(img: HTMLImageElement): Mask {
   const med = ch.map(a => { a.sort((p, q) => p - q); return a[a.length >> 1]!; });
   const raw = new Uint8Array(w * h);
   for (let i = 0; i < w * h; i++) {
-    const dr = d[i * 4]! - med[0]!, dg = d[i * 4 + 1]! - med[1]!, db = d[i * 4 + 2]! - med[2]!;
-    raw[i] = Math.hypot(dr, dg, db) > 22 ? 1 : 0;
+    const r = d[i * 4]!, g = d[i * 4 + 1]!, b = d[i * 4 + 2]!;
+    const chroma = Math.max(r, g, b) - Math.min(r, g, b);
+    raw[i] = Math.hypot(r - med[0]!, g - med[1]!, b - med[2]!) > 22 && chroma > 12 ? 1 : 0;
   }
   return dropFloorShadow({ m: median(raw, w, h, 3), w, h });
 }

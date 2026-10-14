@@ -384,8 +384,8 @@ class Guide implements GuideController {
     const later = (cb: () => void): void => {
       // Safari has no requestIdleCallback
       if (w.requestIdleCallback && w.cancelIdleCallback) {
-        const id = w.requestIdleCallback(cb), cancel = w.cancelIdleCallback;
-        this.cancelIdle = () => cancel(id);
+        const id = w.requestIdleCallback(cb);
+        this.cancelIdle = () => window.cancelIdleCallback(id);
       } else {
         const id = window.setTimeout(cb, 1200);
         this.cancelIdle = () => window.clearTimeout(id);
